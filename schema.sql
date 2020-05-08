@@ -9,9 +9,11 @@ USE `openmrsvd` ;
 
 CREATE TABLE `openmrsvd`.`modules` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
+  `group` VARCHAR(45) NOT NULL,
+  `artifact` VARCHAR(45) NOT NULL,
+  `version` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) VISIBLE);
+  UNIQUE INDEX (`group`,`artifact`,`version`));
 
 CREATE TABLE `openmrsvd`.`dependencyTree` (
   `idmodules` INT NOT NULL,

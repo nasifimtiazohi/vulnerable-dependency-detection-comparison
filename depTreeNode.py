@@ -1,4 +1,4 @@
-class depTreeNode():
+class DepTreeNode():
     def __init__(self, group, artifact, version, packaging, scope=None, depth=None, parent=None):
         self.group=group
         self.artifact=artifact
@@ -12,4 +12,8 @@ class depTreeNode():
     def getAttributes(self):
         return [self.group,self.artifact,self.version,self.packaging,
                 self.scope,self.depth]
+    
+    @staticmethod
+    def getAttributesHeaders():
+        return ['group','artifact','version','packaging','scope','depth']
 
