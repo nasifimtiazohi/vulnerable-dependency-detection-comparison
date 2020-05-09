@@ -22,5 +22,5 @@ CREATE TABLE `openmrsvd`.`dependencyTree` (
   `version` VARCHAR(45) NOT NULL,
   `packaging` VARCHAR(45) NULL,
   `scope` VARCHAR(45) NULL,
-  `depth` VARCHAR(45) NULL,
+  `depth` INT NULL,
   PRIMARY KEY (`idmodules`, `group`, `artifact`, `version`));

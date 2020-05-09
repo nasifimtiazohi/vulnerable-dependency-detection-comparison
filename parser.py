@@ -2,7 +2,7 @@ from DepTreeNode import DepTreeNode
 
 def parseCanonicalForm(s):
     s=s.split(":")
-    if len(s)  < 4:
+    if len(s)  < 4 or len(s) > 5:
         raise Exception("invalid data")
 
     #in maven log, packaging comes before version
