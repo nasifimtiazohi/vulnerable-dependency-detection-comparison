@@ -2,8 +2,8 @@ from DepTreeNode import DepTreeNode
 
 def parseCanonicalForm(s):
     s=s.split(":")
-    if len(s)  < 4 or len(s) > 5:
-        raise Exception("invalid data")
+    if len(s)  < 4:
+        raise Exception("invalid data",s)
 
     #in maven log, packaging comes before version
     group, artifact, packaging, version, scope = s[0], s[1], s[2], s[3], None
