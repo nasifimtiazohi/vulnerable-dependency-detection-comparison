@@ -127,9 +127,10 @@ for file in files:
                     row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
 
     df['iddependency']=df.apply(lambda row: getDependencyId(row.idmodule, row.idpackage), axis=1) 
+    df['tool']='owasp'
+    df=df[['scandate','iddependency','idvulnerability','confidence','tool']]
+
     
-    df=df[['scandate','iddependency','idvulnerability','confidence']]
-    
-    sql.load_df('owasp',df)
+    sql.load_df('alerts',df)
     
     
