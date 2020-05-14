@@ -22,21 +22,6 @@ def redesignColumns(df):
     df.columns= new_names
     return df
 
-
-    
-def getDependencyId(idmodule, idpackage):
-    selectQ='''select id from dependencyTree where 
-            idmodule={} and idpackage={}'''.format(idmodule,idpackage)
-    results = sql.execute(selectQ)
-    if not results:
-        insertQ='''insert into dependencyTree values (null,
-                    {},{},'external',null,null); '''.format(idmodule,idpackage)
-        sql.execute(insertQ)
-        results = sql.execute(selectQ)
-    return results[0]['id']
-    
-
-
 def addPackage(group,artifact,version):
     q="select id from packages where `group`='{}' and artifact='{}' and version ='{}'".format(group,artifact,version)
     results=sql.execute(q)
@@ -64,6 +49,21 @@ def getPackageId(dependency, identifier):
         artifact=temp[0]
         version=temp[1]
         return addPackage(group,artifact,version)
+    
+def getDependencyId(idmodule, idpackage):
+    selectQ='''select id from dependencyTree where 
+            idmodule={} and idpackage={}'''.format(idmodule,idpackage)
+    results = sql.execute(selectQ)
+    if not results:
+        insertQ='''insert into dependencyTree values (null,
+                    {},{},'external',null,null); '''.format(idmodule,idpackage)
+        sql.execute(insertQ)
+        results = sql.execute(selectQ)
+    return results[0]['id']
+    
+
+
+
 
 
 def getVulnerabiltyId(idpackage, source, cve, cwe, cpe,
