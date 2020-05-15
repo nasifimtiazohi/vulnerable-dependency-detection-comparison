@@ -45,8 +45,8 @@ def getDependencyAlerts(repo_owner, repo_name):
     }
     '''
     variables={
-            "repo_owner": "nasifimtiazohi",
-            "repo_name": "openmrs-core",
+            "repo_owner":repo_owner,
+            "repo_name": repo_name,
             "after": None
             }
 
@@ -60,10 +60,10 @@ def getDependencyAlerts(repo_owner, repo_name):
             variables["after"]=data['pageInfo']['endCursor']
         else:
             break
-        
+
     if len(alerts)==totalCount:
         return alerts
     else:
         raise Exception('graphql call not functioning properly,')
 if __name__=='__main__':
-    print(getDependencyAlerts('nasifimtiazohi','openmrs-core'))
+    print(getDependencyAlerts('nasifimtiazohi','testSecurityAlert'))
