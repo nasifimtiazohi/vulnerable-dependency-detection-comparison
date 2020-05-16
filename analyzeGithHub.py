@@ -69,8 +69,11 @@ if __name__=='__main__':
                 raise Exception('outside cve found')
             q="select id from vulnerabilities where CVE='{}'".format(cve)
 
-            idvulnerability=sql.execute(q)[0]['id']
-
+            try:
+                idvulnerability=sql.execute(q)[0]['id']
+            except:
+                raise Exception('need to include severity')
+            #TODO: modify to regard for severity
             q="insert into alerts values(null,{},{},null,'github');".format(
                 str(iddependency), str(idvulnerability))      
 

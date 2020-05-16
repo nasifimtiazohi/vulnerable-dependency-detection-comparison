@@ -2,6 +2,7 @@ import sql
 import requests
 import json 
 import time
+import os
 
 def getPackageId(group, artifact, version):
     selectQ= '''select * from packages where
@@ -47,7 +48,37 @@ def addFromNvdApi(cve, idpackage):
            )
     sql.execute(insertQ)
 
+def getModuleId(module):
+    results=sql.execute('select id from modules where artifact="{}"'.format(module))
+    if not results:
+        raise Exception('module not found')
+    return results[0]['id']
+
+def getPackageId(group, artifact,version):
+    q='''select id from packages where `group`='{}'
+        and artifact='{}' and version='{}';'''.format(
+            group,artifact,version
+        )
+    return sql.execute(q)[0]['id']
+
+def getWatchedRepos():
+    mvn=os.popen('mvn openmrs-sdk:info -DserverId=distro-2-10-0').read().split('\n')[:-1]
+    flag=False
+    repos=[]
+    for line in mvn:
+        if line.startswith('[INFO] Projects watched for changes:'):
+            flag=True
+            continue
+        if flag:
+            line=line.strip()
+            if line.endswith('[INFO]'):
+                flag=False
+            else:
+                repos.append(line.split(' ')[-1])
+                #repos.append('nasifimtiazohi/'+temp)
+    return repos
 if __name__=='__main__':
-    #nvdapi('CVE-2019-10210',3)
     pass
+        
+    
     

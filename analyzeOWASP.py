@@ -131,6 +131,6 @@ for file in files:
     df=df[['scandate','iddependency','idvulnerability','confidence','tool']]
 
     
-    sql.load_df('alerts',df)
+    #sql.load_df('alerts',df)
     
     
