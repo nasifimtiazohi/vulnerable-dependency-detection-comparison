@@ -2,13 +2,13 @@ import pymysql
 import pandas as pd
 import csv
 import os
-
+database='openmrs'
 import sqlalchemy as db
-engine = db.create_engine('mysql+pymysql://root:@localhost:3306/openmrsvd')
+engine = db.create_engine('mysql+pymysql://root:@localhost:3306/{}'.format(database))
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             db='openMRS',
+                             db=database,
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor,
                              autocommit=True,
@@ -24,11 +24,13 @@ def pd_read_sql(query):
 
 def load_df(table,df):
     #check if column names are in order
-    cols=pd_read_sql('''select COLUMN_NAME
-            from INFORMATION_SCHEMA.COLUMNS
-            where TABLE_NAME='{}';'''.format(table))['COLUMN_NAME']
+    q='SHOW COLUMNS FROM {}.{};'.format(database,table)
+    r=execute(q)
+    cols=[]
+    for row in r:
+        cols.append(row['Field'])
     df=df[cols]
-    df.to_sql(table, engine, if_exists='append',index=False,schema='openmrsvd')
+    df.to_sql(table, engine, if_exists='append',index=False,schema=database)
     
 if __name__=='__main__':
     q='select * from repository'

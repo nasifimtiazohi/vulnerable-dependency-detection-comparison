@@ -19,7 +19,7 @@ create table alert
 
 create table dependency
 (
-    id           int         not null
+    id           int auto_increment
         primary key,
     repositoryId int         not null,
     packageId    int         not null,
@@ -32,7 +32,7 @@ create table dependency
 
 create table package
 (
-    id       int          not null
+    id       int auto_increment
         primary key,
     `group`  varchar(255) null,
     artifact varchar(255) null,
@@ -44,7 +44,7 @@ create table package
 
 create table repository
 (
-    id       int          not null
+    id       int auto_increment
         primary key,
     `group`  varchar(255) null,
     artifact varchar(255) null,
@@ -56,7 +56,7 @@ create table repository
 
 create table vulnerability
 (
-    id             int          not null
+    id             int auto_increment
         primary key,
     packageId      int          null,
     source         varchar(255) null,

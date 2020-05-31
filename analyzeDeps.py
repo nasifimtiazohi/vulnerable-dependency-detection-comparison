@@ -1,64 +1,57 @@
 from parser import dependencyTree2dict
 import os
-import sql
+import common, sql
+from common import getPackageId
 from sql import execute, pd_read_sql
 import pandas as pd
 import csv
 import numpy as np
 
-doNotProcessModules=["openmrs"] 
 
-def moduleAlredyProcessed(group, artifact, version) -> bool:
-    query='''select * from modules where
-            `group`='{}' and artifact='{}' and version ='{}'
-                     '''.format(group, artifact, version)
+def repoAlredyProcessed(repo) -> bool:
+    query='''select * from repository where
+            repoName="{}" '''.format(repo)
     results=execute(query)
     if results:
         return True
     return False
 
-def addModule(group, artifact, version) -> int:
-    execute("insert into modules values(null,'{}','{}','{}')".format(group, artifact, version))
-    query='''select * from modules where
+def addRepo(group, artifact, version, repo) -> int:
+    execute("insert into repository values(null,'{}','{}','{}','{}')".format(group, artifact, version,repo))
+    query='''select * from repository where
             `group`='{}' and artifact='{}' and version ='{}'
-                     '''.format(group, artifact, version)
+            and repoName='{}'
+            '''.format(group, artifact, version, repo)
     results=execute(query)
     return results[0]['id']
 
 
-def getPackageId(group, artifact, version):
-    selectQ= '''select * from packages where
-            `group`='{}' and artifact='{}' and version ='{}'
-                     '''.format(group, artifact, version)
-    results=execute(selectQ)
-    if not results:
-        execute("insert into packages values(null,'{}','{}','{}')".format(group, artifact, version))
-        results=execute(selectQ)
-
-    return results[0]['id']
 
 
-def addDependencies():
-    #path to openmrs
-    path= "/Users/nasifimtiaz/openmrs"
+def addDependencies(path):
     os.chdir(path)
+    repo=path.split('/')[-1]
     depfilename="dep.txt"
     files=(os.popen('find ./ -name "{}"'.format(depfilename)).read()).split("\n")[:-1]
+    data=dependencyTree2dict('./'+depfilename)
+    group, artifact, version=data['project'].split(':')
+    if not repoAlredyProcessed(repo):
+        repoId=addRepo(group, artifact, version, repo)
+    else:
+        return 
     for file in files:
         data=dependencyTree2dict(file)
-        group, artifact, version=data['project'].split(':')
-        if not moduleAlredyProcessed(group, artifact, version) and artifact not in doNotProcessModules:
-            id=addModule(group, artifact, version)
-            data=data['dependencies']
-            if not data:
-                #zero dependencies
-                continue
-            data['idmodule']= [id] * len(data['artifact'])
-            df=pd.DataFrame(data)
-            df['idpackage']=df.apply(lambda row: getPackageId(row.group, row.artifact, row.version), axis=1)
-            df.drop(['group','artifact','version'], axis=1, inplace=True)
-            df['id']=[np.nan]*len(df)
-            sql.load_df('dependencyTree',df)
+        module=data['project'].split(':')[1]
+        data=data['dependencies']
+        if not data:
+            #zero dependencies
+            continue
+        data['repositoryId']= [repoId]*len(data['artifact'])
+        data['module']= [module]*len(data['artifact'])
+        df=pd.DataFrame(data)
+        df['packageId']=df.apply(lambda row: getPackageId(row.group, row.artifact, row.version, 'maven'), axis=1)
+        df.drop(['group','artifact','version'], axis=1, inplace=True)
+        sql.load_df('dependencyTree',df)
             
 
         
@@ -89,7 +82,12 @@ def analyzeDependencies():
     
 
 if __name__=='__main__':
-    addDependencies()
+    repos=common.getWatchedRepos()
+    for path in repos:
+        repo=path.split("/")[-1]
+        if not repoAlredyProcessed(repo):
+            addDependencies(path)
+
     
 
 

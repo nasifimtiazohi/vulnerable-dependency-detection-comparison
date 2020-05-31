@@ -4,13 +4,15 @@ import json
 import time
 import os
 
-def getPackageId(group, artifact, version):
+def getPackageId(group, artifact, version,source='null'):
     selectQ= '''select * from package where
             `group`='{}' and artifact='{}' and version ='{}'
                      '''.format(group, artifact, version)
     results=sql.execute(selectQ)
     if not results:
-        raise Exception("package not in database", group, artifact, version)
+        sql.execute("insert into package values(null,'{}','{}','{}','{}')".format(group, artifact, version,source))
+        results=sql.execute(selectQ)
+
     return results[0]['id']
 
 def getDependencyId(idrepo, idpackage):
