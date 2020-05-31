@@ -8,7 +8,7 @@ engine = db.create_engine('mysql+pymysql://root:@localhost:3306/openmrsvd')
 
 connection = pymysql.connect(host='localhost',
                              user='root',
-                             db='openmrsvd',
+                             db='openMRS',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor,
                              autocommit=True,
@@ -30,3 +30,6 @@ def load_df(table,df):
     df=df[cols]
     df.to_sql(table, engine, if_exists='append',index=False,schema='openmrsvd')
     
+if __name__=='__main__':
+    q='select * from repository'
+    execute(q)
