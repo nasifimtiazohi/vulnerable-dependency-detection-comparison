@@ -39,6 +39,7 @@ def addDependencies(path):
         repoId=addRepo(group, artifact, version, repo)
     else:
         return 
+    dependencyDf= pd.DataFrame(columns=['repositoryId','packageId'])
     for file in files:
         data=dependencyTree2dict(file)
         module=data['project'].split(':')[1]
@@ -52,7 +53,12 @@ def addDependencies(path):
         df['packageId']=df.apply(lambda row: getPackageId(row.group, row.artifact, row.version, 'maven'), axis=1)
         df.drop(['group','artifact','version'], axis=1, inplace=True)
         sql.load_df('dependencyTree',df)
-            
+        df=df[['repositoryId','packageId']]
+        dependencyDf = dependencyDf.append(df, ignore_index=True)
+
+    dependencyDf = dependencyDf.drop_duplicates(subset='packageId',keep='last')
+    dependencyDf['id']=[np.nan]*len(dependencyDf)
+    sql.load_df('dependency',dependencyDf)        
 
         
 def analyzeDependencies():
