@@ -5,9 +5,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import numpy as np
 
-path= "/Users/nasifimtiaz/openmrs"
-os.chdir(path)
-files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
+
 
 def getVulns(table) -> dict:
     rows=table.find_all('tr')
@@ -25,45 +23,48 @@ def getVulns(table) -> dict:
             d[cur][package]=cves
     return d
 
-def getModuleIdIfNotAlreadyProcessed(module):
-    q='''select *
-        from modules m
-        join dependencyTree dt
-            on m.id=dt.idmodule
-        join alerts a
-            on dt.id=a.iddependency
-        where m.artifact='{}'
-        and a.tool='victims' '''.format(module)
-    results = sql.execute(q)
-    if results:
-        return -1
-    q='select id from modules where artifact="{}"'.format(module)
-    return sql.execute(q)[0]['id']
 
 
-
-def insertVulns(idmodule,d):
+def insertVulns(repoId,d):
     for k in d.keys():
         group, artifact, version = k.split(':')
         idpackage=common.getPackageId(group, artifact, version)
-        iddependency=common.getDependencyId(idmodule, idpackage)
+        iddependency=common.getDependencyId(repoId, idpackage)
         for cve in d[k]:
-            selectQ="select id from vulnerabilities where CVE='{}'".format(cve)
+            if not cve.startswith('CVE'):
+                raise Exception('non cve vulnerability in victims report')
+            selectQ="select id from vulnerability where CVE='{}'".format(cve)
             results=sql.execute(selectQ)
             if not results:
+                print("start NVD api looking")
                 common.addFromNvdApi(cve,idpackage)
+                print("end NVD api looking")
                 results=sql.execute(selectQ)
             idvulnerability=results[0]['id']
-            q="insert into alerts values(null, {},{},null,'victims');".format(
+            #check if already inserted
+            q='''select * from alert where dependencyId={} and 
+                vulnerabilityId={}'''.format(str(iddependency),str(idvulnerability))
+            results=sql.execute(q)
+            if results:
+                continue
+            q="insert into alert values(null, {},{},null,'victims');".format(
                 str(iddependency),str(idvulnerability))
             sql.execute(q)
                 
 
-for file in files:
-    soup= BeautifulSoup(open(file).read(),'lxml')
-    d=getVulns(soup.find_all('table')[0])
-    for k in d.keys():
-        idmodule= getModuleIdIfNotAlreadyProcessed(k)
-        if idmodule == -1:
-            continue
-        insertVulns(idmodule, d[k])
+
+
+if __name__=='__main__':
+    repos=common.getWatchedRepos()
+    for path in repos:
+        repo=path.split('/')[-1]
+        repoId=common.getRepoId(repo)
+        os.chdir(path)
+        os.system('mvn com.redhat.victims.maven:security-versions:check')
+        os.chdir(path+'/target')
+        files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
+        for file in files:
+            soup= BeautifulSoup(open(file).read(),'lxml')
+            d=getVulns(soup.find_all('table')[0])
+            for k in d.keys(): #each key is a module 
+                insertVulns(repoId, d[k])

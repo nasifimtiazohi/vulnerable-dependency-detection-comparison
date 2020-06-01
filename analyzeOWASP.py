@@ -22,13 +22,7 @@ def redesignColumns(df):
     df.columns= new_names
     return df
 
-# def addPackage(group,artifact,version):
-#     q="select id from packages where `group`='{}' and artifact='{}' and version ='{}'".format(group,artifact,version)
-#     results=sql.execute(q)
-#     if not results:
-#         sql.execute("insert into packages values (null,'{}','{}','{}');".format(group,artifact,version))
-#         results=sql.execute(q)
-#     return sql.execute(q)[0]['id']
+
 def getPackageId(dependency, identifier):
     dep=str(dependency)
     if dep.endswith('.jar'):
@@ -143,7 +137,7 @@ if __name__=='__main__':
     repos=common.getWatchedRepos()
     for path in repos:
         os.chdir(path)
-        #os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
+        os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
         process_alerts(path)
     
     
