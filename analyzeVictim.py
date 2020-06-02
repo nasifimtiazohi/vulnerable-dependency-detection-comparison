@@ -43,7 +43,7 @@ def insertVulns(repoId,d):
             idvulnerability=results[0]['id']
             #check if already inserted
             q='''select * from alert where dependencyId={} and 
-                vulnerabilityId={}'''.format(str(iddependency),str(idvulnerability))
+                vulnerabilityId={} and tool='victims' '''.format(str(iddependency),str(idvulnerability))
             results=sql.execute(q)
             if results:
                 continue
@@ -60,7 +60,7 @@ if __name__=='__main__':
         repo=path.split('/')[-1]
         repoId=common.getRepoId(repo)
         os.chdir(path)
-        os.system('mvn com.redhat.victims.maven:security-versions:check')
+        #os.system('mvn com.redhat.victims.maven:security-versions:check')
         os.chdir(path+'/target')
         files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
         for file in files:

@@ -4,60 +4,42 @@ from gh_graphql import getDependencyAlerts
 import common
 import sql
 
-token=os.environ['token']
+token=os.environ['github_token']
 
-def getWatchedRepos():
-    mvn=os.popen('mvn openmrs-sdk:info -DserverId=distro-2-10-0').read().split('\n')[:-1]
-    flag=False
-    repos=[]
-    for line in mvn:
-        if line.startswith('[INFO] Projects watched for changes:'):
-            flag=True
-            continue
-        if flag:
-            line=line.strip()
-            if line.endswith('[INFO]'):
-                flag=False
-            else:
-                temp=line.split(' ')[-1]
-                temp=temp.split('/')[-1]
-                repos.append('nasifimtiazohi/'+temp)
-    return repos
+
 
 if __name__=='__main__':
     g=Github(token)
+    owner='nasifimtiazohi'
 
-
-    repos=getWatchedRepos()
+    repos=common.getWatchedRepos()
     
-    for repo in repos:
-        name=repo
-        repo=g.get_repo(repo)
+    for path in repos:
+        repoName= path.split('/')[-1]
+        repoId=common.getRepoId(repoName)
+
+        repo=g.get_repo(owner+'/'+repoName)
 
         #enable vulnerability alert if not 
         if not repo.get_vulnerability_alert():
             repo.enable_vulnerability_alert()
         
-        name=name.split('/')
-        owner=name[0]
-        name= name[1]
-        alerts=getDependencyAlerts(owner, name)
+        alerts=getDependencyAlerts(owner, repoName)
 
         #process alerts
         for alert in alerts:
             package= alert['securityVulnerability']['package']['name'].split(':')
             group=package[0]
             artifact=package[1]
-            query='''select dT.id
-                from modules m
-                join dependencyTree dT
-                on m.id=dT.idmodule
-                join packages p on
-                    p.id = dT.idpackage
-                where m.repository='{}'
+            query='''select *
+                from dependency d
+                join package p
+                on d.packageId=p.id
+                where d.repositoryId={}
                 and p.`group`='{}'
-                and p.artifact='{}';'''.format(name, group, artifact)
-            iddependency = sql.execute(query)[0]['id']
+                and p.artifact='{}';'''.format(repoId, group, artifact)
+            iddependency = sql.execute(query)[0]['id'] #take the first one in case of multiple versions present
+            #Note: GitHub does not present version within its alert
             
             temp=alert['securityAdvisory']['identifiers'] 
             cve=None
@@ -67,14 +49,15 @@ if __name__=='__main__':
                     break
             if not cve:
                 raise Exception('outside cve found')
-            q="select id from vulnerabilities where CVE='{}'".format(cve)
+            q="select id from vulnerability where CVE='{}'".format(cve)
 
             try:
                 idvulnerability=sql.execute(q)[0]['id']
             except:
-                raise Exception('need to include severity')
-            #TODO: modify to regard for severity
-            q="insert into alerts values(null,{},{},null,'github');".format(
+                raise Exception('need to insert CVE into database')
+            #TODO: modify to regard for severity and cve insertion
+            #NOTE: GitHub has its own severity rating
+            q="insert into alert values(null,{},{},null,'github');".format(
                 str(iddependency), str(idvulnerability))      
 
             sql.execute(q)  
