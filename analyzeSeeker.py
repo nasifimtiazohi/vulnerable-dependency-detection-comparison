@@ -40,7 +40,7 @@ for component in data:
             idvulnerability=results[0]['id']
             
             #no dependency id for seeker
-            q="insert into alerts values(null,{},{},null,'seeker');".format(
+            q="insert into alerts values(null,null,{},{},null,'seeker');".format(
                         str(idpackage), str(idvulnerability))
             try:
                 sql.execute(q)

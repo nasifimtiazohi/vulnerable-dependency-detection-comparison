@@ -57,7 +57,7 @@ if __name__=='__main__':
                 raise Exception('need to insert CVE into database')
             #TODO: modify to regard for severity and cve insertion
             #NOTE: GitHub has its own severity rating
-            q="insert into alert values(null,{},{},null,'github');".format(
+            q="insert into alert values(null,null,{},{},null,'github');".format(
                 str(iddependency), str(idvulnerability))      
 
             sql.execute(q)  

@@ -19,6 +19,8 @@ def getDependencyId(idrepo, idpackage):
     selectQ='''select id from dependency where 
             repositoryId={} and packageId={}'''.format(idrepo,idpackage)
     results = sql.execute(selectQ)
+    if not results:
+        raise Exception("new dependency found by this tool")
     # if not results:
     #     insertQ='''insert into dependencyTree values (null,
     #                 {},{},'external',null,null); '''.format(idmodule,idpackage)

@@ -29,7 +29,7 @@ if __name__=='__main__':
                     
                     vulnerabilityId=results[0]['id']
 
-                    q="insert into alert values(null,{},{},null,'snyk');".format(
+                    q="insert into alert values(null,null,{},{},null,'snyk');".format(
                         str(dependencyId), str(vulnerabilityId))  
                     sql.execute(q)
             else:
@@ -51,7 +51,7 @@ if __name__=='__main__':
 
                 vulnerabilityId=results[0]['id']
 
-                q="insert into alert values(null,{},{},null,'snyk');".format(
+                q="insert into alert values(null,null,{},{},null,'snyk');".format(
                         str(dependencyId), str(vulnerabilityId))  
                 sql.execute(q)
 
