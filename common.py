@@ -95,6 +95,22 @@ def getWatchedRepos():
                 repos.append(line.split(' ')[-1])
                 #repos.append('nasifimtiazohi/'+temp)
     return repos
+
+
+def alertAlreadyProcessed(repoId, tool):
+    #check if this repo's alert has been processed
+    q='''select *
+        from alert a
+        join dependency d
+        on a.dependencyId=d.id
+        where repositoryId={} and tool='{}' '''.format(repoId, tool)
+    results=sql.execute(q)
+    if results:
+        #previously processed
+        return True
+    else:
+        return False 
+
 if __name__=='__main__':
     print(getWatchedRepos())
         

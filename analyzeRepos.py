@@ -7,10 +7,11 @@ import prepareDistro
 import analyzeDeps
 import analyzeOWASP
 import analyzeVictim
+import analyzeGitHub
+import analyzeSnyk
 
 
-def check_heads():
-    paths = common.getWatchedRepos()
+def check_heads(paths):
     repos=[]
     for path in paths:
         repos.append(path.split('/')[-1])
@@ -34,39 +35,34 @@ def check_heads():
 
     return True
 
-def run_deps():
-    paths = common.getWatchedRepos()
+def run_deps(paths):
     for path in paths:
         print(path)
         assert path.startswith('/Users') #absolute path 
         analyzeDeps.addDependencies(path)
 
 
-def run_OWASP():
-    paths=common.getWatchedRepos()
+def run_OWASP(paths):
     for path in paths:
-        print(path)
-        os.chdir(path)
-        os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
         analyzeOWASP.process_alerts(path)
 
-def run_victims():
-    repos=common.getWatchedRepos()
-    for path in repos:
-        repo=path.split('/')[-1]
-        repoId=common.getRepoId(repo)
-        os.chdir(path)
-        os.system('mvn com.redhat.victims.maven:security-versions:check')
-        os.chdir(path+'/target')
-        files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
-        for file in files:
-            soup= BeautifulSoup(open(file).read(),'lxml')
-            d=getVulns(soup.find_all('table')[0])
-            for k in d.keys(): #each key is a module 
-                insertVulns(repoId, d[k])
+def run_victims(paths):
+    for path in paths:
+        analyzeVictim.scanAndProcess(path)
+
+def run_snyk(paths):
+    for path in paths:
+        analyzeSnyk.scanAndProcess(path)
+    
 
 
 if __name__== '__main__':
+    paths = common.getWatchedRepos()
     # assert check_heads()
     # run_deps()
-    run_OWASP()
+    #run_OWASP()
+    # run_victims()
+    #TODO: github. enabled dep alerts at 5.30 pm on June 7
+    run_snyk(paths)
+        
+

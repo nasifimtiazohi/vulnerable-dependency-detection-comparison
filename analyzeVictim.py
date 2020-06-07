@@ -32,7 +32,7 @@ def insertVulns(repoId,d):
         iddependency=common.getDependencyId(repoId, idpackage)
         for cve in d[k]:
             if not cve.startswith('CVE'):
-                raise Exception('non cve vulnerability in victims report')
+                raise Exception('non cve vulnerability in victims report', cve)
             selectQ="select id from vulnerability where CVE='{}'".format(cve)
             results=sql.execute(selectQ)
             if not results:
@@ -52,7 +52,25 @@ def insertVulns(repoId,d):
             sql.execute(q)
                 
 
+def scanAndProcess(path):
+    repo=path.split('/')[-1]
+    repoId=common.getRepoId(repo)
 
+    if common.alertAlreadyProcessed(repoId,'victims'):
+        return 
+    
+    #Run the scan
+    os.chdir(path)
+    os.system('mvn com.redhat.victims.maven:security-versions:check')
+
+    #read the output files
+    os.chdir(path+'/target')
+    files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
+    for file in files:
+        soup= BeautifulSoup(open(file).read(),'lxml')
+        d=getVulns(soup.find_all('table')[0])
+        for k in d.keys(): #each key is a module 
+            insertVulns(repoId, d[k])
 
 if __name__=='__main__':
     repos=common.getWatchedRepos()
