@@ -1,21 +1,13 @@
 import os
-from github import Github
 from gh_graphql import getDependencyAlerts
 import common
 import sql
 
 token=os.environ['github_token']
 
-def enable_dependency_alerts(owner, repo):
-    g=Github(token)
-    repo=g.get_repo(owner+'/'+repo)
-    #enable vulnerability alert if not 
-    if not repo.get_vulnerability_alert():
-        repo.enable_vulnerability_alert()
 
 
 if __name__=='__main__':
-    g=Github(token)
     owner='nasifimtiazohi'
 
     repos=common.getWatchedRepos()
@@ -23,12 +15,6 @@ if __name__=='__main__':
     for path in repos:
         repoName= path.split('/')[-1]
         repoId=common.getRepoId(repoName)
-
-        repo=g.get_repo(owner+'/'+repoName)
-
-        #enable vulnerability alert if not 
-        if not repo.get_vulnerability_alert():
-            repo.enable_vulnerability_alert()
         
         alerts=getDependencyAlerts(owner, repoName)
 
