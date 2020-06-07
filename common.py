@@ -79,6 +79,7 @@ def getRepoId(repo):
 
 
 def getWatchedRepos():
+    os.chdir('/Users/nasifimtiaz/openmrs')
     mvn=os.popen('mvn openmrs-sdk:info -DserverId=distro-2-10-0').read().split('\n')[:-1]
     flag=False
     repos=[]
@@ -95,7 +96,7 @@ def getWatchedRepos():
                 #repos.append('nasifimtiazohi/'+temp)
     return repos
 if __name__=='__main__':
-   pass
+    print(getWatchedRepos())
         
     
     
