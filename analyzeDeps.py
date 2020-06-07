@@ -29,9 +29,10 @@ def addRepo(group, artifact, version, repo) -> int:
 
 
 def addDependencies(path):
-    os.chdir(path)
-    repo=path.split('/')[-1]
     depfilename="dep.txt"
+    os.chdir(path)
+    os.system('mvn dependency:tree -DoutputFile={}'.format(depfilename))
+    repo=path.split('/')[-1]
     files=(os.popen('find ./ -name "{}"'.format(depfilename)).read()).split("\n")[:-1]
     data=dependencyTree2dict('./'+depfilename)
     group, artifact, version=data['project'].split(':')
@@ -84,7 +85,12 @@ def analyzeDependencies():
         print(t)
         
 
-
+def check():
+    #rerun dependency analysis and check if all was done right
+    paths=common.getWatchedRepos()
+    for path in paths:
+        repo=path.split('/')[-1]
+        repoId=common.getRepoId(repo)
     
 
 if __name__=='__main__':

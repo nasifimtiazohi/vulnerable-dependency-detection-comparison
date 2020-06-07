@@ -2,12 +2,8 @@ import sys, os
 import common, sql
 import csv
 import pandas as pd
+import numpy as np
 
-def getModuleId(module):
-    results=sql.execute('select id from modules where artifact="{}"'.format(module))
-    if not results:
-        raise Exception('module not found')
-    return results[0]['id']
 
 def redesignColumns(df):
     keep=['ScanDate', 'DependencyName', 'Description',
@@ -72,10 +68,10 @@ def getVulnerabiltyId(packageId, source, cve, cwe, cpe,
         nonCVE=cve
 
     #string cleaning
-    cwe=cwe.replace('"','\\"')
-    cpe=cpe.replace('"','\\"')
-    description=description.replace('"','\\"')
-    vulnerability=vulnerability.replace('"','\\"')
+    cwe=cwe.replace('"',' ').replace('\\','')
+    cpe=cpe.replace('"',' ').replace('\\','')
+    description=description.replace('"',' ').replace('\\','')
+    vulnerability=vulnerability.replace('"',' ').replace('\\','')
 
 
     selectQ= '''select id from vulnerability
@@ -102,6 +98,18 @@ def process_alerts(path):
     os.chdir(path)
     repo=path.split('/')[-1]
     repoId=common.getRepoId(repo)
+
+    #check if this repo's alert has been processed
+    q='''select *
+        from alert a
+        join dependency d
+        on a.dependencyId=d.id
+        where repositoryId={} and tool='owasp' '''.format(repoId)
+    results=sql.execute(q)
+    if results:
+        #previously processed
+        return 
+
     depfilename="dependency-check-report.csv"
     #files=(os.popen('find ./ -name "{}"'.format(depfilename)).read()).split("\n")[:-1]
     files=['./target/'+depfilename] #will only read the root file
@@ -129,7 +137,7 @@ def process_alerts(path):
         df['tool']='owasp'
         df=df[['scandate','dependencyId','vulnerabilityId','confidence','tool']]
 
-        
+        df['id']=[np.nan] *len(df)
         sql.load_df('alert',df)
 
 
