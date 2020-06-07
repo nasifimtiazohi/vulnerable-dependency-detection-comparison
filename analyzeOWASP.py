@@ -22,11 +22,32 @@ def redesignColumns(df):
 def getPackageId(dependency, identifier):
     dep=str(dependency)
     if dep.endswith('.jar'):
+        #handle exception cases
+        if dep.count('jar') > 1:
+            dep=dep.split('jar:')
+            dep=dep[-1].strip()
+
         dep=dep[:-4]
-        q='''select id
-            from package
-            where concat(artifact,'-',version) = '{}';'''.format(dep)
-        return sql.execute(q)[0]['id']
+
+        #handle exception case
+        if dep == 'gradle-wrapper':
+            artifact=dep
+            selectQ='select id from package where artifact="{}" and version="undefined"'.format(artifact)
+            results=sql.execute(selectQ)
+            if not results:
+                insertQ='insert into package values(null,null,"{}","undefined", "owasp")'.format(artifact)
+                sql.execute(insertQ)
+                results= sql.execute(selectQ)
+            return results[0]['id']
+        
+        else:
+            q='''select id
+                from package
+                where concat(artifact,'-',version) = '{}';'''.format(dep)
+            try:
+                return sql.execute(q)[0]['id']
+            except Exception as e:
+                raise Exception(q,e)
     else:
         #get name and version from the package
         templist=identifier.split("/")
@@ -57,15 +78,16 @@ def getDependencyId(repoId, packageId):
 
 
 
-def getVulnerabiltyId(packageId, source, cve, cwe, cpe,
+def getVulnerabiltyId(dependency, packageId, source, cve, cwe, cpe,
                     description, vulnerability, CVSS2_severity,
                     CVSS2_score, CVSS3_severity, CVSS3_score ):
     if cve.startswith('CVE'):
         CVE=cve
         nonCVE='None'
     else:
+        #non CVEs for OWASP can vary based on both dependency and description in cve columns
         CVE='None'
-        nonCVE=cve
+        nonCVE= cve + " in " + dependency 
 
     #string cleaning
     cwe=cwe.replace('"',' ').replace('\\','')
@@ -95,20 +117,15 @@ def getVulnerabiltyId(packageId, source, cve, cwe, cpe,
 
 #path to openmrs
 def process_alerts(path):
+    print(path, " has started")
     os.chdir(path)
     repo=path.split('/')[-1]
     repoId=common.getRepoId(repo)
 
-    #check if this repo's alert has been processed
-    q='''select *
-        from alert a
-        join dependency d
-        on a.dependencyId=d.id
-        where repositoryId={} and tool='owasp' '''.format(repoId)
-    results=sql.execute(q)
-    if results:
-        #previously processed
-        return 
+    if common.alertAlreadyProcessed(repoId,'owasp'):
+        return
+
+    os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
 
     depfilename="dependency-check-report.csv"
     #files=(os.popen('find ./ -name "{}"'.format(depfilename)).read()).split("\n")[:-1]
@@ -128,7 +145,7 @@ def process_alerts(path):
         
         df = df.astype(object).where(pd.notnull(df),'null')
 
-        df['vulnerabilityId']=df.apply(lambda row: getVulnerabiltyId(row.packageId, row.source, 
+        df['vulnerabilityId']=df.apply(lambda row: getVulnerabiltyId(row.dependency, row.packageId, row.source, 
                         row.CVE, row.CWE, row.CPE,
                         row.description, row.vulnerability, row.CVSS2_severity,
                         row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
@@ -138,6 +155,7 @@ def process_alerts(path):
         df=df[['scandate','dependencyId','vulnerabilityId','confidence','tool']]
 
         df['id']=[np.nan] *len(df)
+        df.drop_duplicates()
         sql.load_df('alert',df)
 
 
