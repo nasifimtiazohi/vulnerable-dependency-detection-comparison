@@ -55,9 +55,7 @@ def insertVulns(repoId,d):
 def scanAndProcess(path):
     repo=path.split('/')[-1]
     repoId=common.getRepoId(repo)
-
-    if common.alertAlreadyProcessed(repoId,'victims'):
-        return 
+    
     
     #Run the scan
     os.chdir(path)

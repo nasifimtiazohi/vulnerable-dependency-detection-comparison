@@ -54,7 +54,11 @@ def run_snyk(paths):
     for path in paths:
         analyzeSnyk.scanAndProcess(path)
     
-
+def run_github(paths):
+    for path in paths:
+        repo=path.split('/')[-1]
+        owner='nasifimtiazohi'
+        analyzeGitHub.processAlerts(owner, repo)
 
 if __name__== '__main__':
     paths = common.getWatchedRepos()
@@ -62,7 +66,7 @@ if __name__== '__main__':
     # run_deps()
     #run_OWASP()
     # run_victims()
-    #TODO: github. enabled dep alerts at 5.30 pm on June 7
-    run_snyk(paths)
+    run_github(paths)
+    #run_snyk(paths)
         
 

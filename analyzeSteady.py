@@ -18,12 +18,14 @@ if __name__=='__main__':
     repos= common.getWatchedRepos()
     for path in repos:
         os.chdir(path)
+        repo=path.split('/')[-1]
+        repoId=common.getRepoId(repo)
+
         #read the root level target directory
         data= json.loads(open('target/vulas/report/vulas-report.json','r').read())['vulasReport']
 
         scandate= data['generatedAt']
-        repo=path.split('/')[-1]
-        repoId=common.getRepoId(repo)
+        
         vulnerabilities=data['vulnerabilities']
 
         for vuln in vulnerabilities:

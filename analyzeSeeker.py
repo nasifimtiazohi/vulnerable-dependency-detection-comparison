@@ -11,7 +11,7 @@ for component in data:
         version=component['Version']
         if not version:
             version='%'
-        selectQ='''select id from packages
+        selectQ='''select id from package
         where artifact='{}' and version like '{}%' 
         '''.format(artifact,version)
         results=sql.execute(selectQ)
@@ -20,19 +20,19 @@ for component in data:
                 version='null'
             else:
                 version = "'"+version+"'"
-            q='''insert into packages values (null,
+            q='''insert into package values (null,
             null, '{}',{},'seeker')
             '''.format(artifact,version)
             sql.execute(q)
             results=sql.execute(selectQ)
         if not results:
-            selectQ='''select id from packages
+            selectQ='''select id from package
                     where artifact='{}' '''.format(artifact)
             results=sql.execute(selectQ)
         idpackage=results[0]['id']
         for vuln in component['Vulnerabilities']:
             cve=vuln['CVE']
-            q='select id from vulnerabilities where CVE="{}"'.format(cve)
+            q='select id from vulnerability where CVE="{}"'.format(cve)
             results=sql.execute(q)
             if not results:
                 common.addFromNvdApi(cve,idpackage)
@@ -40,7 +40,7 @@ for component in data:
             idvulnerability=results[0]['id']
             
             #no dependency id for seeker
-            q="insert into alerts values(null,null,{},{},null,'seeker');".format(
+            q="insert into alert values(null,null,{},{},null,'seeker');".format(
                         str(idpackage), str(idvulnerability))
             try:
                 sql.execute(q)
