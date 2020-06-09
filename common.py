@@ -40,7 +40,7 @@ def addFromRedhatApi(cve, idpackage):
     if 'cvss3' in data.keys():
         score3= data['cvss3']['cvss3_base_score']
     insertQ='''insert into vulnerability values(null,
-           {},null, "{}", null, null, null,"{}",null, {}, {}, {}, {} ); '''.format(
+           {},null, "{}", 'None', null, null,"{}",null, {}, {}, {}, {} ); '''.format(
                idpackage, cve, description, severity2, str(score2), severity3, str(score3)
            )
     #print(insertQ)
@@ -65,7 +65,7 @@ def addFromNvdApi(cve, idpackage):
         severity3='"'+ t['cvssV3']['baseSeverity']+'"'
         score3=t['cvssV3']['baseScore']
     insertQ='''insert into vulnerability values(null,
-           {},null, "{}", null, null, null,"{}",null, {}, {}, {}, {} ); '''.format(
+           {},null, "{}", 'None', null, null,"{}",null, {}, {}, {}, {} ); '''.format(
                idpackage, cve, description, severity2, str(score2), severity3, str(score3)
            )
     sql.execute(insertQ)
