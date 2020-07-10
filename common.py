@@ -30,6 +30,7 @@ def getDependencyId(idrepo, idpackage):
 
 
 def addFromRedhatApi(cve, idpackage):
+    #Data is limited to redhat components
     url='https://access.redhat.com/labs/securitydataapi/cve/'+cve
     data=json.loads(requests.get(url).content)
     description=(' '.join(x for x in data['details'])).replace('"','')
