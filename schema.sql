@@ -1,33 +1,36 @@
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
-SET @OLD_TIME_ZONE=@@session.time_zone;
-
-DROP SCHEMA IF EXISTS `openMRS` ;
-CREATE SCHEMA IF NOT EXISTS `openMRS` DEFAULT CHARACTER SET utf8;
-USE `openMRS` ;
-
 create table alert
 (
+    id              int auto_increment
+        primary key,
     scandate        varchar(255) null,
     dependencyId    int          not null,
-    vulnerabilityId int          not null
-        primary key,
+    vulnerabilityId int          not null,
     confidence      varchar(45)  null,
-    tool            varchar(45)  null
+    tool            varchar(45)  not null,
+    constraint alert_pk
+        unique (dependencyId, vulnerabilityId, tool)
 );
 
 create table dependency
 (
     id           int auto_increment
         primary key,
-    repositoryId int         not null,
-    packageId    int         not null,
-    packaging    varchar(45) null,
-    scope        varchar(45) null,
-    depth        int         not null,
+    repositoryId int not null,
+    packageId    int not null,
     constraint dependency_pk
         unique (repositoryId, packageId)
+);
+
+create table dependencyTree
+(
+    repositoryId int          not null,
+    module       varchar(255) not null,
+    packageId    int          not null,
+    scope        varchar(45)  null,
+    depth        int          null,
+    packaging    varchar(45)  null,
+    constraint dependencyTree_pk
+        unique (repositoryId, packageId, module, scope, packaging)
 );
 
 create table package
@@ -54,6 +57,23 @@ create table repository
         unique (repoName)
 );
 
+create table snykDuplicate
+(
+    vulnerabilityId int not null
+        primary key,
+    count           int not null
+);
+
+create table steady
+(
+    alertId           int         not null
+        primary key,
+    vulnerableVersion varchar(45) null,
+    callGraph         varchar(45) null,
+    unitTest          varchar(45) null,
+    integrationTest   varchar(45) null
+);
+
 create table vulnerability
 (
     id             int auto_increment
@@ -62,8 +82,8 @@ create table vulnerability
     source         varchar(255) null,
     CVE            varchar(45)  null,
     nonCVE         varchar(255) null,
-    CWE            varchar(45)  null,
-    CPE            varchar(45)  null,
+    CWE            longtext     null,
+    CPE            longtext     null,
     description    longtext     null,
     vulnerability  longtext     null,
     CVSS2_severity varchar(45)  null,
@@ -71,6 +91,6 @@ create table vulnerability
     CVSS3_severity varchar(45)  null,
     CVSS3_score    float        null,
     constraint vulnerability_pk
-        unique (CVE, nonCVE)
+        unique (CVE, nonCVE, packageId)
 );
 

@@ -1,4 +1,14 @@
-import os
+'''
+Distro contains 44 projects.
+43 are maven projects which are 
+cloned and checked out through this script.
+The other one, OWA module called sysadmin
+is a javascript package 
+and not covered by maven SDK.
+Therefore, it is cloned and processed individually.
+'''
+import sys, os
+sys.path.append('..')
 from lxml import etree as ET
 import csv
 import pandas as pd
@@ -15,10 +25,7 @@ def readPom(file):
     hm={}
     for idx, item in enumerate(items):
         if item.tag is ET.Comment:
-            if 'OWA' in item.text:
-                break
-            else:
-                continue
+            continue
     
         artifact= item.tag.replace('{http://maven.apache.org/POM/4.0.0}','').replace('Version','').strip().lower()
         hm[artifact]={}
@@ -32,6 +39,9 @@ def readPom(file):
         elif artifact == 'uitestframework':
             group='org.openmrs.contrib'
             repoName='openmrs-contrib-'+artifact
+        elif artifact == 'sysadmin':
+            group = 'javascript'
+            reponame = 'openmrs-owa-'+artifact
         else:
             group='org.openmrs.module'
             repoName='openmrs-module-'+artifact
@@ -39,8 +49,6 @@ def readPom(file):
         hm[artifact]['version']=version
         hm[artifact]['group']=group
         hm[artifact]['repo']=repoName
-
-    assert len(hm)==43
 
     return hm 
 
@@ -78,7 +86,7 @@ def cloneAndCheckoutVersion(artifact, data):
 
 if __name__=='__main__':
     hm = readPom('pom.xml')
-
+    
     paths = common.getWatchedRepos()
 
     for path in paths:
@@ -88,6 +96,8 @@ if __name__=='__main__':
 
     for k in hm.keys():
         if hm[k]['repo'] in clonedRepos:
+            continue
+        if 'org.openmrs' not in hm[k]['group']:
             continue
 
         cloneAndCheckoutVersion(k, hm[k])
