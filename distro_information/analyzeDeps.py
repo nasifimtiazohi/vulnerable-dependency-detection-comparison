@@ -8,23 +8,6 @@ import csv
 import numpy as np
 
 
-def repoAlredyProcessed(repo) -> bool:
-    query='''select * from repository where
-            repoName="{}" '''.format(repo)
-    results=execute(query)
-    if results:
-        return True
-    return False
-
-def addRepo(group, artifact, version, repo) -> int:
-    execute("insert into repository values(null,'{}','{}','{}','{}')".format(group, artifact, version,repo))
-    query='''select * from repository where
-            `group`='{}' and artifact='{}' and version ='{}'
-            and repoName='{}'
-            '''.format(group, artifact, version, repo)
-    results=execute(query)
-    return results[0]['id']
-
 
 
 

@@ -41,7 +41,7 @@ def readPom(file):
             repoName='openmrs-contrib-'+artifact
         elif artifact == 'sysadmin':
             group = 'javascript'
-            reponame = 'openmrs-owa-'+artifact
+            repoName = 'openmrs-owa-'+artifact
         else:
             group='org.openmrs.module'
             repoName='openmrs-module-'+artifact
@@ -84,8 +84,36 @@ def cloneAndCheckoutVersion(artifact, data):
 
     time.sleep(3) #incase of api rate limits
 
+def repoAlredyProcessed(repo) -> bool:
+    query='''select * from repository where
+            repoName="{}" '''.format(repo)
+    results=sql.execute(query)
+    if results:
+        return True
+    return False
+
+def addRepo(group, artifact, version, repo):
+    if repoAlredyProcessed(repo):
+        return 
+    sql.execute("insert into repository values(null,'{}','{}','{}','{}')".
+            format(group, artifact, version,repo))
+    # query='''select * from repository where
+    #         `group`='{}' and artifact='{}' and version ='{}'
+    #         and repoName='{}'
+    #         '''.format(group, artifact, version, repo)
+    # results=sql.execute(query)
+    # return results[0]['id']
+
+
+def addProjectsToDB(proects):
+    for project in proects.keys():
+        d=projects[project]
+        addRepo(d['group'],project,d['version'],d['repo'])
+
 if __name__=='__main__':
-    hm = readPom('pom.xml')
+    projects = readPom('pom.xml')
+    
+    addProjectsToDB(projects)
     
     paths = common.getWatchedRepos()
 
@@ -94,10 +122,10 @@ if __name__=='__main__':
         clonedRepos.append(repo)
     
 
-    for k in hm.keys():
-        if hm[k]['repo'] in clonedRepos:
+    for k in projects.keys():
+        if projects[k]['repo'] in clonedRepos:
             continue
-        if 'org.openmrs' not in hm[k]['group']:
+        if 'org.openmrs' not in projects[k]['group']:
             continue
 
-        cloneAndCheckoutVersion(k, hm[k])
+        cloneAndCheckoutVersion(k, projects[k])
