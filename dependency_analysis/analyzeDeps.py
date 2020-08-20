@@ -47,29 +47,6 @@ def addMavenDependencies(repoId, path):
     dependencyDf['id']=[np.nan]*len(dependencyDf)
     sql.load_df('dependency',dependencyDf)        
 
-        
-def analyzeDependencies():
-    df=pd_read_sql('''select m.artifact as module, dt.*
-                    from modules m
-                    join dependencyTree dt
-                    on m.id=dt.idmodules;''')
-    gb=df.groupby('module')
-    table=[]
-    for k, gp in gb:
-        total=len(gp)
-        compile= len(gp[gp.scope=='compile'])
-        test = len(gp[gp.scope=='test'])
-        others = total - compile - test
-        direct = len(gp[gp.depth == 1])
-        transitive = total - direct
-        median = int(gp.depth.median())
-        max = gp.depth.max()
-        temp=[k,compile,test,others,direct,transitive,median,max]
-        table.append('&'.join(str(x) for x in temp) + '\\\\')
-    
-    for t in table:
-        print(t)
-
 
 def addNodeDependencies(repoId, path):
     df = ndt.parse_dependency(path)
