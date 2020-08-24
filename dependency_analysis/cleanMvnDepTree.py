@@ -44,14 +44,14 @@ for dep in deps:
         
         depth = min(depths)        
         scope=None
-        if 'compile' in scopes:
-                scope='compile'
-        elif 'test' in scopes:
-                scope='test'
-        elif 'provided' in scopes:
+        if 'provided' in scopes:
                 scope='provided'
+        elif 'compile' in scopes:
+                scope='compile'
         elif 'runtime' in scopes:
                 scope='runtime'
+        elif 'test' in scopes:
+                scope='test'
     
     q='insert into derivedMavenDependencyTree values (%s,%s,%s)'
     sql.execute(q,(dependencyId,depth,scope))
