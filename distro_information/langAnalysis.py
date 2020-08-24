@@ -35,8 +35,6 @@ def dependencyFileAnalysis(repoPath, langBreakdown):
     
     os.chdir(repoPath)
     
-    print(os.getcwd())
-    
     depFiles=[]
     depFormats=[]
     
@@ -53,16 +51,34 @@ def dependencyFileAnalysis(repoPath, langBreakdown):
                     depFormats.append(file)
     
     return depFormats, depFiles
-            
+
+def getRepoId(repo):
+    q='select id from repository where repoName=%s'
+    return sql.execute(q,(repo,))[0]['id']     
+
+def addDependencyFiles(repoId, depFiles):
+    q='insert into repoDependencyFiles values(%s,%s)'
+    for file in depFiles:
+        if file.startswith('./'):
+            file=file[2:]
+            sql.execute(q,(repoId,file))
+              
 
 if __name__== '__main__':
-    language_breakdown('/Users/nasifimtiaz/openmrs/openmrs-module-coreapps')
     repoPaths=common.getAllRepos()
     languages=[]
+    formats={}
     for path in repoPaths:
+        repo = path.split('/')[-1]
+        repoId = getRepoId(repo)
+        
         hm = language_breakdown(path)
         languages += list(hm.keys())
+        
         depFormats, depFiles = dependencyFileAnalysis(path, hm)
-        print(path, depFormats)
+        formats[repo]=depFormats
+        addDependencyFiles(repoId, depFiles)
+        
     
-    print(set(languages))
+    print(maven,node,mixed)
+        

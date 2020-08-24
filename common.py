@@ -3,77 +3,105 @@ import requests
 import json 
 import time
 import os
+from dateutil import parser as dt
 
-def getPackageId(group, artifact, version,source='null'):
-    selectQ= '''select * from package where
-            `group`='{}' and artifact='{}' and version ='{}'
-                     '''.format(group, artifact, version)
-    results=sql.execute(selectQ)
+def getPackageId(group, artifact, version, ecosystem=None):
+    selectQ= 'select * from package where artifact=%s and version =%s'
+    results=sql.execute(selectQ,(artifact, version))
     if not results:
-        sql.execute("insert into package values(null,'{}','{}','{}','{}')".format(group, artifact, version,source))
-        results=sql.execute(selectQ)
+        assert ecosystem
+        sql.execute("insert into package values(null,%s,%s,%s,%s)"
+                    ,(group, artifact, version, ecosystem))
+        results=sql.execute(selectQ,(artifact, version))
 
     return results[0]['id']
 
-def getDependencyId(idrepo, idpackage):
+def getDependencyId(idrepo, idpackage, idtool=None):
     selectQ='''select id from dependency where 
-            repositoryId={} and packageId={}'''.format(idrepo,idpackage)
-    results = sql.execute(selectQ)
+            repositoryId=%s and packageId=%s'''
+    results = sql.execute(selectQ,(idrepo,idpackage))
     if not results:
-        raise Exception("new dependency found by this tool")
-    # if not results:
-    #     insertQ='''insert into dependencyTree values (null,
-    #                 {},{},'external',null,null); '''.format(idmodule,idpackage)
-    #     sql.execute(insertQ)
-    #     results = sql.execute(selectQ)
-    return results[0]['id']
-
-
-def addFromRedhatApi(cve, idpackage):
-    #Data is limited to redhat components
-    url='https://access.redhat.com/labs/securitydataapi/cve/'+cve
-    data=json.loads(requests.get(url).content)
-    description=(' '.join(x for x in data['details'])).replace('"','')
-    severity2, score2, severity3, score3 = ['null']*4
-    #TODO: No severity rating mentioned explicitly
-    if 'cvss' in data.keys():
-        score2= data['cvss']['cvss_base_score']
-    if 'cvss3' in data.keys():
-        score3= data['cvss3']['cvss3_base_score']
-    insertQ='''insert into vulnerability values(null,
-           {},null, "{}", 'None', null, null,"{}",null, {}, {}, {}, {} ); '''.format(
-               idpackage, cve, description, severity2, str(score2), severity3, str(score3)
-           )
-    #print(insertQ)
-    sql.execute(insertQ)
+        insertQ = 'insert into dependency values(%s,%s%s)'
+        sql.execute(insertQ,(None,idrepo,idpackage))
+        results = sql.execute(selectQ,(idrepo,idpackage))
+    iddependency= results[0]['id']
+    
+    #check if this dependency was in deptree (maven or npm)
+    q='''select * from
+        (select packageId
+        from mavenDependencyTree
+        union
+        select packageId from
+        npmDependencyTree) t
+        where packageId=%s;'''
+    check = sql.execute(q,(idpackage,))
+    if not check:
+        q='insert into dependencyFoundByTool values(%s,%s)'
+        assert not idtool
+        sql.execute(q,(iddependency,idtool))
+    
+    return iddependency
 
 def addFromNvdApi(cve, idpackage):
-    print("started", cve)
     url='https://services.nvd.nist.gov/rest/json/cve/1.0/'+cve
-    data=json.loads(requests.get(url).content)
-    print('ended')
+    response=requests.get(url)
+    while response.status_code != 200 :
+        time.sleep(3)
+        response=requests.get(url)
+    print('fetched cve: ',cve)
+    
+    data=json.loads(response.content)
     data=data['result']['CVE_Items'][0]
+    
+    publishDate=dt.parse(data['publishedDate'])
+    
+    temp=data['cve']['problemtype']['problemtype_data'][0]['description']
+    cwes=[]
+    for t in temp:
+        if 'CWE' in t['value']:
+            if not 'NVD' in t['value']:
+                cwes.append(int(t['value'].split('-')[1].strip()))    
+            else:
+                cwes.append(t['value'])
+    
     description=data['cve']['description']['description_data'][0]['value']
     description=description.replace('"','')
+    
     data=data['impact']
-    severity2, score2, severity3, score3 = ['null']*4
+    severity2, score2, severity3, score3 = [None] * 4
     if 'baseMetricV2' in data.keys():
         t=data['baseMetricV2']
-        severity2='"'+ t['severity'] +'"'
+        severity2=t['severity']
         score2=t['cvssV2']['baseScore']
     if 'baseMetricV3' in data.keys():
         t=data['baseMetricV3']
-        severity3='"'+ t['cvssV3']['baseSeverity']+'"'
+        severity3= t['cvssV3']['baseSeverity']
         score3=t['cvssV3']['baseScore']
-    insertQ='''insert into vulnerability values(null,
-           {},null, "{}", 'None', null, null,"{}",null, {}, {}, {}, {} ); '''.format(
-               idpackage, cve, description, severity2, str(score2), severity3, str(score3)
-           )
-    sql.execute(insertQ)
-    time.sleep(3)
+    
+    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    try:
+        sql.execute(insertQ,(None, idpackage, 'NVD', 
+                            cve, None, 
+                            publishDate, description, 
+                            score2, severity2, score3, severity3))
+    except sql.pymysql.IntegrityError as error:
+        if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+            print(cve, ' already exists')
+    
+    idvulnerability = getVulnerabilityId(idpackage, cve, None)
+    
+    q='insert into vulnerabilityCWE values(%s,%s)'
+    for cwe in cwes:
+        if type(cwe) != int:
+            cwe=-1 #'NVD-CVE-Noinfo or other"
+            print(cwe, ' cwe does not have an integer id')
+        sql.execute(q,(idvulnerability,cwe))
+
+         
+        
 
 def getRepoId(repo):
-    results=sql.execute('select id from repository where repoName="{}"'.format(repo))
+    results=sql.execute('select id from repository where repoName=%s',(repo,))
     if not results:
         raise Exception('repo not found')
     return results[0]['id']
@@ -98,6 +126,26 @@ def getWatchedRepos():
     return repos
 
 
+def getNpmPackageRepos():
+    q='''select repositoryId, repoName, file
+        from repoDependencyFiles rDF
+        join repository r on rDF.repositoryId = r.id
+        where file like %s;'''
+    results=sql.execute(q,('%package.json',))
+
+    repos={}
+    for item in results:
+        repoPath = '/Users/nasifimtiaz/openmrs/'+item['repoName']
+        repoId=item['repositoryId']
+        if '/' not in item['file']:
+            repos[repoId] = repoPath
+        else:
+            packagePath= item['file'].split('/')[:-1] #cut package.json filename
+            repos[repoId] = repoPath + '/' + '/'.join(packagePath)
+    
+    return repos
+
+
 def alertAlreadyProcessed(repoId, tool):
     #check if this repo's alert has been processed
     q='''select *
@@ -112,8 +160,54 @@ def alertAlreadyProcessed(repoId, tool):
     else:
         return False 
 
+def getNonMavenProjects():
+    repos=['/Users/nasifimtiaz/openmrs/openmrs-owa-sysadmin']
+    return repos
+
+def getAllRepos():
+    return getWatchedRepos() + getNonMavenProjects()
+
+def getToolId(name):
+    selectQ = 'select id from tool where name=%s'
+    results=sql.execute(selectQ,(name,))
+    if not results:
+        insertQ='insert into tool values(%s,%s)'
+        sql.execute(insertQ,(None,name))
+        results=sql.execute(selectQ)
+    return results[0]['id']
+        
+
+def getVulnerabilityId(packageId, cveId, sourceId):
+    def selectId():
+        nonlocal packageId, cveId, sourceId
+        if cveId and not sourceId:
+            selectQ='''select id from vulnerability where
+                        packageId=%s and cveId=%s and sourceId is null'''
+            return sql.execute(selectQ,(packageId,cveId))
+        else:
+            selectQ='''select id from vulnerability where
+                        packageId=%s and cveId is null and sourceId=%s'''
+            return sql.execute(selectQ,(packageId,sourceId))
+        
+    
+    results = selectId()
+        
+    if not results:
+        if cveId and not sourceId:
+            addFromNvdApi(cveId, packageId)
+        else:
+            #TODO 
+            pass
+    
+    results = selectId()
+    
+    return results[0]['id']
+
 if __name__=='__main__':
-    print(getWatchedRepos())
+    selectQ='''select id from vulnerability where
+                packageId=%s and cveId=%s and sourceId=null'''
+    results= sql.execute(selectQ,(2,'CVE-2016-5007'))
+    print(results)
         
     
     

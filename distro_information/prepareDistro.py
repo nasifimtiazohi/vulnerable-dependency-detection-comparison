@@ -97,12 +97,6 @@ def addRepo(group, artifact, version, repo):
         return 
     sql.execute("insert into repository values(null,'{}','{}','{}','{}')".
             format(group, artifact, version,repo))
-    # query='''select * from repository where
-    #         `group`='{}' and artifact='{}' and version ='{}'
-    #         and repoName='{}'
-    #         '''.format(group, artifact, version, repo)
-    # results=sql.execute(query)
-    # return results[0]['id']
 
 
 def addProjectsToDB(proects):
