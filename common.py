@@ -42,7 +42,7 @@ def getDependencyId(idrepo, idpackage, idtool=None):
     
     return iddependency
 
-def addFromNvdApi(cve, idpackage):
+def addFromNvdApi(cve):
     url='https://services.nvd.nist.gov/rest/json/cve/1.0/'+cve
     response=requests.get(url)
     while response.status_code != 200 :
@@ -78,9 +78,9 @@ def addFromNvdApi(cve, idpackage):
         severity3= t['cvssV3']['baseSeverity']
         score3=t['cvssV3']['baseScore']
     
-    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
     try:
-        sql.execute(insertQ,(None, idpackage, 'NVD', 
+        sql.execute(insertQ,(None, 'NVD', 
                             cve, None, 
                             publishDate, description, 
                             score2, severity2, score3, severity3))
@@ -88,16 +88,20 @@ def addFromNvdApi(cve, idpackage):
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print(cve, ' already exists')
     
-    idvulnerability = getVulnerabilityId(idpackage, cve, None)
-    
+    idvulnerability = getVulnerabilityId(cve, None)
+    addCWEs(idvulnerability, cwes)
+
+def addCWEs(vulnerabilityId, cwes):
     q='insert into vulnerabilityCWE values(%s,%s)'
     for cwe in cwes:
         if type(cwe) != int:
             cwe=-1 #'NVD-CVE-Noinfo or other"
             print(cwe, ' cwe does not have an integer id')
-        sql.execute(q,(idvulnerability,cwe))
-
-         
+        try:
+            sql.execute(q,(vulnerabilityId,cwe))
+        except sql.pymysql.IntegrityError as error:
+            if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                return
         
 
 def getRepoId(repo):
@@ -146,20 +150,6 @@ def getNpmPackageRepos():
     return repos
 
 
-def alertAlreadyProcessed(repoId, tool):
-    #check if this repo's alert has been processed
-    q='''select *
-        from alert a
-        join dependency d
-        on a.dependencyId=d.id
-        where repositoryId={} and tool='{}' '''.format(repoId, tool)
-    results=sql.execute(q)
-    if results:
-        #previously processed
-        return True
-    else:
-        return False 
-
 def getNonMavenProjects():
     repos=['/Users/nasifimtiaz/openmrs/openmrs-owa-sysadmin']
     return repos
@@ -173,28 +163,28 @@ def getToolId(name):
     if not results:
         insertQ='insert into tool values(%s,%s)'
         sql.execute(insertQ,(None,name))
-        results=sql.execute(selectQ)
+        results=sql.execute(selectQ,(name,))
     return results[0]['id']
         
 
-def getVulnerabilityId(packageId, cveId, sourceId):
+def getVulnerabilityId(cveId, sourceId):
     def selectId():
-        nonlocal packageId, cveId, sourceId
+        nonlocal cveId, sourceId
         if cveId and not sourceId:
             selectQ='''select id from vulnerability where
-                        packageId=%s and cveId=%s and sourceId is null'''
-            return sql.execute(selectQ,(packageId,cveId))
+                         cveId=%s and sourceId is null'''
+            return sql.execute(selectQ,(cveId))
         else:
             selectQ='''select id from vulnerability where
-                        packageId=%s and cveId is null and sourceId=%s'''
-            return sql.execute(selectQ,(packageId,sourceId))
+                        cveId is null and sourceId=%s'''
+            return sql.execute(selectQ,(sourceId))
         
     
     results = selectId()
         
     if not results:
         if cveId and not sourceId:
-            addFromNvdApi(cveId, packageId)
+            addFromNvdApi(cveId)
         else:
             #TODO 
             pass

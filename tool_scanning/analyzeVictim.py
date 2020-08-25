@@ -16,7 +16,7 @@ def getVulns(table) -> dict:
         for cve in cves:
             if not cve.startswith('CVE'):
                 raise Exception('non cve vulnerability in victims report', cve)
-            ids.append(common.getVulnerabilityId(packageId,cve,None))
+            ids.append(common.getVulnerabilityId(cve,None))
         return ids
     
     rows=table.find_all('tr')
@@ -63,7 +63,7 @@ def addAlerts(vuln):
         dependencyId = vuln[vulnerabilityId]['dependencyId']
         count= vuln[vulnerabilityId]['count']
         
-        insertQ = 'insert into alert values(%s,%s,%s,%s,%s,%s,%s,%s)'
+        insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
                                  toolId, None, None, count))
