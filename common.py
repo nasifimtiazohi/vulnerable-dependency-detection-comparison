@@ -193,6 +193,13 @@ def getVulnerabilityId(cveId, sourceId):
     
     return results[0]['id']
 
+def getTimeDeltaInMinutes(diff):
+    return (diff.days*1440 + diff.seconds/60)
+
+def addScanTime(toolId, minutes):
+    q= 'insert into scanTime values(%s,%s)'
+    sql.execute(q,(toolId, minutes))
+
 if __name__=='__main__':
     selectQ='''select id from vulnerability where
                 packageId=%s and cveId=%s and sourceId=null'''

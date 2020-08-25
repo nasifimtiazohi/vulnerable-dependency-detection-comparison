@@ -9,7 +9,7 @@ from datetime import datetime
 
 toolId= common.getToolId('Maven Security Versions')
 
-def getVulns(table) -> dict:
+def getVulns(repoId, table) -> dict:
     
     def getCVEids(cves, packageId):
         ids=[]
@@ -35,9 +35,10 @@ def getVulns(table) -> dict:
             package=cols[0].getText()
             group, artifact, version = package.split(':')
             packageId=common.getPackageId(group, artifact, version)
+            dependencyId = common.getDependencyId(repoId, packageId)
         
             cves=(cols[1].getText()).replace('\n','').replace(' ','').split(',')
-            d[cur][packageId] = getCVEids(cves,packageId)
+            d[cur][dependencyId] = getCVEids(cves,packageId)
     
     return d
 
@@ -45,24 +46,19 @@ def getVulns(table) -> dict:
 def dedupe_vulns(repoId, d):
     vuln={}
     for module in d.keys():
-        for packageId in d[module].keys():
-            for vulnId in d[module][packageId]:
-                if vulnId not in vuln:
-                    vuln[vulnId] = {'count':1}
-                    vuln[vulnId]['dependencyId'] = common.getDependencyId(
-                                                    repoId, packageId)
+        for dependencyId in d[module].keys():
+            for vulnId in d[module][dependencyId]:
+                if (vulnId, dependencyId) not in vuln:
+                    vuln[(vulnId, dependencyId)] = {'count':1}
                 else:
-                    vuln[vulnId]['count']+=1
+                    vuln[(vulnId, dependencyId)]['count']+=1
     
     return vuln
 
 def addAlerts(vuln):
     scandate= datetime.now()
-    for vulnerabilityId in vuln.keys():
-        
-        dependencyId = vuln[vulnerabilityId]['dependencyId']
-        count= vuln[vulnerabilityId]['count']
-        
+    for (vulnerabilityId, dependencyId) in vuln.keys():
+        count= vuln[(vulnerabilityId, dependencyId)]['count']
         insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
@@ -78,7 +74,13 @@ def scanAndProcess(path):
     repo=path.split('/')[-1]
     repoId=common.getRepoId(repo)
     os.chdir(path)
+    
+    start= datetime.now()
     os.system('mvn com.redhat.victims.maven:security-versions:check')
+    end=datetime.now()
+    diff=end-start
+    scanTime = common.getTimeDeltaInMinutes(diff)
+    
     os.chdir(path+'/target')
     files=(os.popen("find . -type f -path */dependencies/* -name index.html").read()).split("\n")[:-1]
     
@@ -86,11 +88,17 @@ def scanAndProcess(path):
     file=files[0]
     
     soup= BeautifulSoup(open(file).read(),'lxml')
-    d=getVulns(soup.find_all('table')[0])
+    d=getVulns(repoId, soup.find_all('table')[0])
     vulns = dedupe_vulns(repoId, d)
     addAlerts(vulns)
+    
+    return scanTime
 
 if __name__=='__main__':
     repos=common.getWatchedRepos()
+    scanTime = 0
     for path in repos:
-        scanAndProcess(path)
+        scanTime += scanAndProcess(path)
+        print(scanTime)
+    
+    common.addScanTime(toolId, scanTime)

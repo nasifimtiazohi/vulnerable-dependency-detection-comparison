@@ -29,39 +29,59 @@ def addSnykVulenrability(vuln):
         common.addCWEs(results[0]['id'], cwes)
             
     return results[0]['id']
+
+
+def constructDependencyPath(paths):
+    assert type(paths) == list
+    s = ''
+    for i, path in enumerate(paths):
+        if i!= 0:
+            s+='->'
+        s+=path
+    return s
     
-    
-def addSnykInfo(vuln, dependencyId):
-    id=vuln['id']
+def addSnykInfo(vuln, repoId):
+    snykId = vuln['id']
+    dependencyPath = constructDependencyPath(vuln['from'])
     isUpgradable = vuln['isUpgradable']
     isPatchable = vuln['isPatchable']
     proprietary = vuln['proprietary']
-    exploit = vuln['exploit']
     if 'parentDepType' in vuln:
         depType = vuln['parentDepType']
     else:
         depType=None
-    if vuln['fixedIn']:
-        fixedVersion = True
-    else:
-        fixedVersion = False
+    
     
     insertQ=  'insert into snyk values(%s,%s,%s,%s,%s,%s,%s,%s)'
     try:
-        sql.execute(insertQ,(id, dependencyId, fixedVersion,
-                             isUpgradable,isPatchable,
-                             depType, proprietary, exploit))
+        sql.execute(insertQ,(None, snykId, repoId, dependencyPath,
+                             isUpgradable, isPatchable,
+                              depType, proprietary))
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+            print('snykinfo already present')
             return
     
+def addVulnerabilityInfo(vulnId, vuln):
+    if 'fixedIn' in vuln and vuln['fixedIn']:
+        fixedVersion = True
+    else:
+        fixedVersion = False
+    exploit = vuln['exploit']
+    
+    
+    insertQ = 'insert into vulnerabilityInfoSnyk values (%s,%s,%s)'
+    try:
+        sql.execute(insertQ,(vulnId, fixedVersion, exploit))
+    except sql.pymysql.IntegrityError as error:
+        if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+            print('vulnerability info snyk already present')
+            return
 
 def processNpmModules(repoId, npmModules):
-    d={}
+    d = {}
+    
     for module in npmModules:
-        project = module['projectName']
-        d[project]={}
-        
         for vuln in module['vulnerabilities']:
             artifact = vuln['moduleName']
             version = vuln['version']
@@ -69,31 +89,35 @@ def processNpmModules(repoId, npmModules):
             dependencyId = common.getDependencyId(repoId, packageId)
 
             ids = vuln['identifiers']
-            vulnIds=[]
+            severity = vuln['severity']
             
+            vulnIds=[]
             if ids['CVE']:
                 #CVE id present
                 for cve in ids['CVE']:
-                    vulnIds.append(common.getVulnerabilityId(cve, None))
+                    vulnId = common.getVulnerabilityId(cve, None)
+                    vulnIds.append(vulnId)
+                    addVulnerabilityInfo(vulnId, vuln)
             else:
-                vulnIds.append(addSnykVulenrability(vuln))
+                vulnId = addSnykVulenrability(vuln)
+                vulnIds.append(vulnId)
+                addVulnerabilityInfo(vulnId, vuln)
             
             for vulnId in vulnIds:
-                if packageId not in d[project]:
-                    d[project][packageId] = [vulnId]
+                if (vulnId, dependencyId) not in d:
+                    d[(vulnId, dependencyId)] = {'count':1, 'severity':severity}
                 else:
-                    d[project][packageId].append(vulnId)
-                
-            addSnykInfo(vuln,dependencyId)
+                    d[(vulnId, dependencyId)]['count']+=1
+            
+            addSnykInfo(vuln,repoId)
     
     return d
-            
+        
+        
 def processMavenModules(repoId, mavenModules):
     d={}
+    
     for module in mavenModules:
-        project = module['projectName']
-        d[project]={}
-        
         for vuln in module['vulnerabilities']:
             group= vuln['mavenModuleName']['groupId']
             artifact = vuln['mavenModuleName']['artifactId']
@@ -102,50 +126,41 @@ def processMavenModules(repoId, mavenModules):
             dependencyId = common.getDependencyId(repoId, packageId)
 
             ids = vuln['identifiers']
-            vulnIds=[]
+            severity = vuln['severity']
             
+            vulnIds=[]
             if ids['CVE']:
                 #CVE id present
                 for cve in ids['CVE']:
-                    vulnIds.append(common.getVulnerabilityId(cve, None))
+                    vulnId = common.getVulnerabilityId(cve, None)
+                    vulnIds.append(vulnId)
+                    addVulnerabilityInfo(vulnId, vuln)
             else:
-                vulnIds.append(addSnykVulenrability(vuln))
+                vulnId = addSnykVulenrability(vuln)
+                vulnIds.append(vulnId)
+                addVulnerabilityInfo(vulnId, vuln)
             
             for vulnId in vulnIds:
-                if packageId not in d[project]:
-                    d[project][packageId] = [vulnId]
+                if (vulnId, dependencyId) not in d:
+                    d[(vulnId, dependencyId)] = {'count':1, 'severity':severity}
                 else:
-                    d[project][packageId].append(vulnId)
-                
-            addSnykInfo(vuln,dependencyId)
-    
-    return d
+                    d[(vulnId, dependencyId)]['count']+=1
             
-def dedupe_vulns(repoId, d):
-    vuln={}
-    for module in d.keys():
-        for packageId in d[module].keys():
-            for vulnId in d[module][packageId]:
-                if vulnId not in vuln:
-                    vuln[vulnId] = {'count':1}
-                    vuln[vulnId]['dependencyId'] = common.getDependencyId(
-                                                    repoId, packageId)
-                else:
-                    vuln[vulnId]['count']+=1
-    
-    return vuln            
-                         
+            addSnykInfo(vuln,repoId)
+                    
+
+    return d
+                 
 def addMavenAlerts(vuln):
     scandate= datetime.now()
-    for vulnerabilityId in vuln.keys():
-        
-        dependencyId = vuln[vulnerabilityId]['dependencyId']
-        count= vuln[vulnerabilityId]['count']
+    for (vulnerabilityId, dependencyId) in vuln.keys():
+        count= vuln[(vulnerabilityId, dependencyId)]['count']
+        severity = vuln[(vulnerabilityId, dependencyId)]['severity']
         
         insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
-                                 toolId, None, None, count))
+                                 toolId, None, severity, count))
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
@@ -153,15 +168,14 @@ def addMavenAlerts(vuln):
 
 def addNpmAlerts(vuln):
     scandate= datetime.now()
-    for vulnerabilityId in vuln.keys():
-        
-        dependencyId = vuln[vulnerabilityId]['dependencyId']
-        count= vuln[vulnerabilityId]['count']
+    for (vulnerabilityId, dependencyId) in vuln.keys():
+        count= vuln[(vulnerabilityId, dependencyId)]['count']
+        severity = vuln[(vulnerabilityId, dependencyId)]['severity']
         
         insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
-                                 toolId, None, None, count))
+                                 toolId, None, severity, count))
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
@@ -173,11 +187,25 @@ def scanAndProcess(path):
     os.chdir(path)
     repo= path.split('/')[-1]
     repoId=common.getRepoId(repo)
-
-    report= json.loads(os.popen('snyk test --all-projects --dev --json').read())
+    
+    print('scanning ', path)
+    
+    start=datetime.now()
+    report = os.system('snyk test --all-projects --dev --json > snyk.json')
+    end=datetime.now()
+    diff= end - start
+    scantime = common.getTimeDeltaInMinutes(diff)
+    
+    report = json.loads(open('snyk.json','r').read())
     
     mavenModules=[]
     npmModules=[]
+
+    if type(report) == list:
+        print('multi-project', len(report))
+    elif type(report) == dict:
+        report = [report]
+        print('single project', len(report))
     
     for module in report:
         if module['packageManager']=='npm':
@@ -187,16 +215,23 @@ def scanAndProcess(path):
         else:
             print('outside npm maven found. see report for ', path)
     
-    d = processNpmModules(repoId, npmModules)
-    vuln = dedupe_vulns(repoId, d)
-    addNpmAlerts(vuln)
+    npm_d = processNpmModules(repoId, npmModules)
+    addNpmAlerts(npm_d)
     
-    processMavenModules(repoId, mavenModules)
-    vuln = dedupe_vulns(repoId, d)
-    addMavenAlerts(vuln)
+    maven_d = processMavenModules(repoId, mavenModules)
+    addMavenAlerts(maven_d)
+    
+    return scantime
     
 
 if __name__=='__main__':
+    #as we can't set a key on dependencyPath in snyk table
+    # we make sure truncation here to avoid duplication
+    sql.execute('truncate table snyk')
+    
     repos=common.getAllRepos()
+    scantime = 0
     for path in repos:
-        scanAndProcess(path)
+        scantime += scanAndProcess(path)
+    
+    common.addScanTime(toolId, scantime)

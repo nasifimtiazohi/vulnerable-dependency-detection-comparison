@@ -1,8 +1,9 @@
-import os
+import os, sys
+sys.path.append('../..')
 from gh_graphql import getDependencyAlerts
-import common
-import sql
-import time
+import common, sql
+import time, dateutil.parser as dt 
+from datetime import datetime
 
 token=os.environ['github_token']
 
@@ -12,6 +13,7 @@ def processAlerts(owner, repo):
     print(repo)
     repoId=common.getRepoId(repo)
     alerts=getDependencyAlerts(owner, repo)
+    print(alerts)
 
     #process alerts
     for alert in alerts:
@@ -55,4 +57,4 @@ def processAlerts(owner, repo):
 
 
 if __name__=='__main__':
-    pass
+    paths = common.
