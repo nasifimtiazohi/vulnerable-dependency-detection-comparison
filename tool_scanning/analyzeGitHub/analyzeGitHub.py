@@ -14,6 +14,7 @@ def processAlerts(owner, repo):
     repoId=common.getRepoId(repo)
     alerts=getDependencyAlerts(owner, repo)
     print(alerts)
+    exit()
 
     #process alerts
     for alert in alerts:
@@ -57,4 +58,11 @@ def processAlerts(owner, repo):
 
 
 if __name__=='__main__':
-    paths = common.
+    paths = common.getAllRepos()
+    for path in paths:
+        repo = path.split('/')[-1]
+        repoId= common.getRepoId(repo)
+        if repoId != 8:
+            continue
+        processAlerts('nasifimtiazohi',repo)
+        

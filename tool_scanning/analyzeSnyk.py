@@ -118,6 +118,7 @@ def processMavenModules(repoId, mavenModules):
     d={}
     
     for module in mavenModules:
+        print(module['projectName'])
         for vuln in module['vulnerabilities']:
             group= vuln['mavenModuleName']['groupId']
             artifact = vuln['mavenModuleName']['artifactId']
@@ -129,13 +130,20 @@ def processMavenModules(repoId, mavenModules):
             severity = vuln['severity']
             
             vulnIds=[]
+            snykFlag = True
             if ids['CVE']:
+                snykFlag=False
                 #CVE id present
                 for cve in ids['CVE']:
                     vulnId = common.getVulnerabilityId(cve, None)
+                    if vulnId == -1:
+                        if len(ids['CVE']) > 1:
+                            continue
+                        else:
+                            snykFlag = True
                     vulnIds.append(vulnId)
                     addVulnerabilityInfo(vulnId, vuln)
-            else:
+            if snykFlag:
                 vulnId = addSnykVulenrability(vuln)
                 vulnIds.append(vulnId)
                 addVulnerabilityInfo(vulnId, vuln)

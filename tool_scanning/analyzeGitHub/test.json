@@ -1,0 +1,383 @@
+[
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4Njg=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'org.apache.http.conn.ssl.AbstractVerifier in Apache HttpComponents HttpClient before 4.3.5 and HttpAsyncClient before 4.0.2 does not properly verify that the server hostname matches a domain name in the subject\'s Common Name (CN) or subjectAltName field of the X.509 certificate, which allows man-in-the-middle attackers to spoof SSL servers via a "CN=" string in a field in the distinguished name (DN) of a certificate, as demonstrated by the "foo,CN=www.apache.org" string in the O field.', 'ghsaId': 'GHSA-cfh5-3ghh-wfjx', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-cfh5-3ghh-wfjx'
+                },
+                {'type': 'CVE', 'value': 'CVE-2014-3577'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-10-17T00: 05: 06Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'MAVEN', 'name': 'org.apache.httpcomponents:httpclient'
+            }
+        }, 'vulnerableManifestFilename': 'pom.xml', 'vulnerableManifestPath': 'pom.xml', 'vulnerableRequirements': '= 4.2'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4Njk=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "http/conn/ssl/AbstractVerifier.java in Apache Commons HttpClient before 4.2.3 does not properly verify that the server hostname matches a domain name in the subject's Common Name (CN) or subjectAltName field of the X.509 certificate, which allows man-in-the-middle attackers to spoof SSL servers via a certificate with a subject that specifies a common name in a field that is not the CN field. NOTE: this issue exists because of an incomplete fix for CVE-2012-5783.", 'ghsaId': 'GHSA-2x83-r56g-cv47', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-2x83-r56g-cv47'
+                },
+                {'type': 'CVE', 'value': 'CVE-2012-6153'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-10-17T00: 05: 15Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'MAVEN', 'name': 'org.apache.httpcomponents:httpclient'
+            }
+        }, 'vulnerableManifestFilename': 'pom.xml', 'vulnerableManifestPath': 'pom.xml', 'vulnerableRequirements': '= 4.2'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzA=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'http/conn/ssl/SSLConnectionSocketFactory.java in Apache HttpComponents HttpClient before 4.3.6 ignores the http.socket.timeout configuration setting during an SSL handshake, which allows remote attackers to cause a denial of service (HTTPS call hang) via unspecified vectors.', 'ghsaId': 'GHSA-fmj5-wv96-r2ch', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-fmj5-wv96-r2ch'
+                },
+                {'type': 'CVE', 'value': 'CVE-2015-5262'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-10-17T00: 05: 29Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'MAVEN', 'name': 'org.apache.httpcomponents:httpclient'
+            }
+        }, 'vulnerableManifestFilename': 'pom.xml', 'vulnerableManifestPath': 'pom.xml', 'vulnerableRequirements': '= 4.2'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzE=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A flaw was found in org.codehaus.jackson:jackson-mapper-asl: 1.9.x libraries. XML external entity vulnerabilities similar to CVE-2016-3720 also affects codehaus jackson-mapper-asl libraries but in different classes.', 'ghsaId': 'GHSA-r6j9-8759-g62w', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-r6j9-8759-g62w'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-10172'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-02-04T22: 39: 19Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'MAVEN', 'name': 'org.codehaus.jackson:jackson-mapper-asl'
+            }
+        }, 'vulnerableManifestFilename': 'pom.xml', 'vulnerableManifestPath': 'api/pom.xml', 'vulnerableRequirements': '= 1.5.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzI=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A flaw was found in org.codehaus.jackson:jackson-mapper-asl: 1.9.x libraries. XML external entity vulnerabilities similar to CVE-2016-3720 also affects codehaus jackson-mapper-asl libraries but in different classes.', 'ghsaId': 'GHSA-r6j9-8759-g62w', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-r6j9-8759-g62w'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-10172'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-02-04T22: 39: 19Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'MAVEN', 'name': 'org.codehaus.jackson:jackson-mapper-asl'
+            }
+        }, 'vulnerableManifestFilename': 'pom.xml', 'vulnerableManifestPath': 'omod/pom.xml', 'vulnerableRequirements': '= 1.5.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzM=', 'createdAt': '2020-06-07T21: 36: 47Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'hoek node module before 5.0.3 or 4.2.1 suffers from a Modification of Assumed-Immutable Data (MAID) vulnerability via \'merge\' and \'applyToDefaults\' functions, which allows a malicious user to modify the prototype of "Object" via __proto__, causing the addition or modification of an existing property that will exist on all objects.', 'ghsaId': 'GHSA-jp4x-w63m-7wgm', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-jp4x-w63m-7wgm'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-3728'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-04-26T15: 25: 17Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'hoek'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 2.16.3'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzQ=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The mime module is vulnerable to regular expression denial of service when a mime lookup is performed on untrusted user input.', 'ghsaId': 'GHSA-wrvr-8mpx-r7pp', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-wrvr-8mpx-r7pp'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16138'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-07-20T16: 20: 52Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'mime'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 1.2.4'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzU=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A ReDoS (regular expression denial of service) flaw was found in the tough-cookie module before 2.3.3 for Node.js. An attacker that is able to make an HTTP request using a specially crafted cookie may cause the application to consume an excessive amount of CPU.', 'ghsaId': 'GHSA-g7q5-pjjr-gqvp', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-g7q5-pjjr-gqvp'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-15010'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-07-24T20: 14: 39Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'tough-cookie'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 2.3.2'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4NzY=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Fresh is a module used by the Express.js framework for HTTP response freshness testing. It is vulnerable to a regular expression denial of service when it is passed specially crafted input to parse. This causes the event loop to be blocked causing a denial of service condition.', 'ghsaId': 'GHSA-9qj9-36jm-prpv', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-9qj9-36jm-prpv'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16119'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-07-24T20: 16: 57Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'fresh'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.3.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4Nzc=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The parsejson module is vulnerable to regular expression denial of service when untrusted user input is passed into it to be parsed.', 'ghsaId': 'GHSA-q75g-2496-mxpp', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-q75g-2496-mxpp'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16113'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-07-24T20: 11: 13Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'parsejson'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.0.3'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4Nzg=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'lodash node module before 4.17.5 suffers from a Modification of Assumed-Immutable Data (MAID) vulnerability via defaultsDeep, merge, and mergeWith functions, which allows a malicious user to modify the prototype of "Object" via __proto__, causing the addition or modification of an existing property that will exist on all objects.', 'ghsaId': 'GHSA-fvqr-27wr-82fm', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-fvqr-27wr-82fm'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-3721'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-07-26T15: 14: 52Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'lodash'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.17.4'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4Nzk=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The HTTP client module superagent is vulnerable to ZIP bomb attacks. In a ZIP bomb attack, the HTTP server replies with a compressed response that becomes several magnitudes larger once uncompressed. If a client does not take special care when processing such responses, it may result in excessive CPU and/or memory consumption. An attacker might exploit such a weakness for a DoS attack. To exploit this the attacker must control the location (URL) that superagent makes a request to.', 'ghsaId': 'GHSA-8225-6cvr-8pqp', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-8225-6cvr-8pqp'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16129'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-08-09T20: 13: 01Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'superagent'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.6.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODA=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The debug module is vulnerable to regular expression denial of service when untrusted user input is passed into the o formatter. It takes around 50k characters to block for 2 seconds making this a low severity issue.', 'ghsaId': 'GHSA-gxpj-cx7g-858c', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-gxpj-cx7g-858c'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16137'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-08-09T20: 18: 07Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'debug'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 2.6.8'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODE=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The sshpk NPM package is vulnerable to ReDoS when parsing crafted invalid public keys.', 'ghsaId': 'GHSA-2m39-62fm-q8r3', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-2m39-62fm-q8r3'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-3737'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-08-15T13: 22: 23Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'sshpk'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 1.13.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODI=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The macaddress module before 0.2.9 for Node.js is prone to an arbitrary command injection flaw, due to allowing unsanitized input to an exec (rather than execFile) call.', 'ghsaId': 'GHSA-pp57-mqmh-44h7', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-pp57-mqmh-44h7'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-13797'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-09-06T23: 24: 21Z', 'severity': 'CRITICAL'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'macaddress'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.2.8'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODM=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The NPM package cryptiles version 4.1.1 and earlier contains a CWE-331: Insufficient Entropy vulnerability in randomDigits() method that can result in An attacker is more likely to be able to brute force something that was supposed to be random.. This attack appear to be exploitable via Depends upon the calling application.. This vulnerability appears to have been fixed in 4.1.2.', 'ghsaId': 'GHSA-rq8g-5pc5-wrhr', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-rq8g-5pc5-wrhr'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-1000620'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-09-11T18: 22: 50Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'cryptiles'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 2.0.5'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODQ=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'react-native-meteor-oauth is a library for Oauth2 login to a Meteor server in React Native. The oauth Random Token is generated using a non-cryptographically strong RNG (Math.random()).', 'ghsaId': 'GHSA-6g33-f262-xjp4', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-6g33-f262-xjp4'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-16028'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-10-09T00: 57: 21Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'randomatic'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 1.1.7'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODU=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'The Express web framework before 3.11 and 4.x before 4.5 for Node.js does not provide a charset field in HTTP Content-Type headers in 400 level responses, which might allow remote attackers to conduct cross-site scripting (XSS) attacks via characters in a non-standard encoding.', 'ghsaId': 'GHSA-gpvr-g6gh-9mc2', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-gpvr-g6gh-9mc2'
+                },
+                {'type': 'CVE', 'value': 'CVE-2014-6393'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2018-10-23T17: 22: 54Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'express'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 2.5.11'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODY=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A prototype pollution vulnerability was found in module extend <2.0.2, ~<3.0.2 that allows an attacker to inject arbitrary properties onto Object.prototype.', 'ghsaId': 'GHSA-qrmc-fj45-qfc2', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-qrmc-fj45-qfc2'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-16492'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-02-07T18: 03: 28Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'extend'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.0.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODc=', 'createdAt': '2020-06-07T21: 36: 48Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A prototype pollution vulnerability was found in lodash <4.17.11 where the functions merge, mergeWith, and defaultsDeep can be tricked into adding or modifying properties of Object.prototype.', 'ghsaId': 'GHSA-4xc9-xhrj-v574', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-4xc9-xhrj-v574'
+                },
+                {'type': 'CVE', 'value': 'CVE-2018-16487'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-02-07T18: 16: 48Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'lodash'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.17.4'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODg=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'jQuery before 3.4.0, as used in Drupal, Backdrop CMS, and other products, mishandles jQuery.extend(true,
+            {}, ...) because of Object.prototype pollution. If an unsanitized source object contained an enumerable __proto__ property, it could extend the native Object.prototype.', 'ghsaId': 'GHSA-6c3j-c64m-qhgq', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-6c3j-c64m-qhgq'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-11358'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-04-26T16: 29: 11Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'jquery'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.2.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4ODk=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Axios up to and including 0.18.0 allows attackers to cause a denial of service (application crash) by continuing to accepting content after maxContentLength is exceeded.', 'ghsaId': 'GHSA-42xw-2xvc-qx8m', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-42xw-2xvc-qx8m'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-10742'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-05-29T18: 04: 45Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'axios'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.16.2'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTE=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Js-yaml prior to 3.13.1 are vulnerable to Code Injection. The load() function may execute arbitrary code injected through a malicious YAML file.', 'ghsaId': 'GHSA-8j8c-7jfh-h6hx', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-8j8c-7jfh-h6hx'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2019-0063'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-04T20: 14: 07Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'js-yaml'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.7.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTI=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Versions js-yaml prior to 3.13.0 are vulnerable to Denial of Service. By parsing a carefully-crafted YAML file, the node process stalls and may exhaust system resources leading to a Denial of Service.', 'ghsaId': 'GHSA-2pr6-76vf-7546', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-2pr6-76vf-7546'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2019-0032'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-05T14: 35: 29Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'js-yaml'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.7.0'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTM=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Version of clean-css prior to 4.1.11 are vulnerable to Regular Expression Denial of Service (ReDoS). Untrusted input may cause catastrophic backtracking while matching regular expressions. This can cause the application to be unresponsive leading to Denial of Service.', 'ghsaId': 'GHSA-wxhq-pm8v-cw75', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-wxhq-pm8v-cw75'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2019-0017'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-05T20: 50: 16Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'clean-css'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.1.8'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTQ=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Version of braces prior to 2.3.1 are vulnerable to Regular Expression Denial of Service (ReDoS). Untrusted input may cause catastrophic backtracking while matching regular expressions. This can cause the application to be unresponsive leading to Denial of Service.', 'ghsaId': 'GHSA-g95f-p29q-9xw4', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-g95f-p29q-9xw4'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2019-0019'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-06T15: 30: 30Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'braces'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 1.8.5'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTY=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'A vulnerability was descovered in eslint before 4.18.2. One of the regexes in eslint is vulnerable to catastrophic backtracking.', 'ghsaId': 'GHSA-jcgq-xh2f-2hfm', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-jcgq-xh2f-2hfm'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2018-0592'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-19T22: 02: 06Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'eslint'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.6.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTc=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'stringstream versions before 0.0.6 are vulnerable to out-of-bounds read as it allocates uninitialized Buffers when number is passed in input stream on Node.js 4.x and below.', 'ghsaId': 'GHSA-mf6x-7mm4-x2g7', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-mf6x-7mm4-x2g7'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2018-0103'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-20T18: 22: 32Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'stringstream'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.0.5'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTg=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Affected versions of lodash are vulnerable to Prototype Pollution. \nThe function defaultsDeep could be tricked into adding or modifying properties of Object.prototype using a constructor payload.', 'ghsaId': 'GHSA-jf85-cpcp-j695', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-jf85-cpcp-j695'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-10744'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-07-10T19: 45: 23Z', 'severity': 'CRITICAL'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'lodash'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.17.4'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI4OTk=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "Versions of handlebars prior to 4.0.14 are vulnerable to Prototype Pollution. Templates may alter an Objects' prototype, thus allowing an attacker to execute arbitrary code on the server.", 'ghsaId': 'GHSA-q42p-pg8m-cqh6', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-q42p-pg8m-cqh6'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2019-0064'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-05T14: 07: 48Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'handlebars'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.0.10'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDA=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'lodash prior to 4.7.11 is affected by: CWE-400: Uncontrolled Resource Consumption. The impact is: Denial of service. The component is: Date handler. The attack vector is: Attacker provides very long strings, which the library attempts to match using a regular expression. The fixed version is: 4.7.11.', 'ghsaId': 'GHSA-x5rq-j2xg-h7qm', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-x5rq-j2xg-h7qm'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-1010266'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-07-19T16: 13: 07Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'lodash'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.17.4'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDE=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Affected version of ws (0.2.6 through 3.3.0 excluding 1.1.5) are vulnerable to A specially crafted value of the Sec-WebSocket-Extensions header that used Object.prototype property names as extension or parameter names could be used to make a ws server crash.', 'ghsaId': 'GHSA-5v72-xg48-5rpm', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-5v72-xg48-5rpm'
+                },
+                {'type': 'WHITE_SOURCE', 'value': 'WS-2017-0421'
+                }
+            ], 'origin': 'WHITESOURCE', 'publishedAt': '2019-06-04T19: 37: 52Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'ws'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 1.1.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDI=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "Versions of handlebars prior to 4.3.0 are vulnerable to Prototype Pollution leading to Remote Code Execution. Templates may alter an Object's __proto__ and __defineGetter__ properties, which may allow an attacker to execute arbitrary code through crafted payloads.", 'ghsaId': 'GHSA-w457-6q6x-cgp9', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-w457-6q6x-cgp9'
+                },
+                {'type': 'CVE', 'value': 'CVE-2019-19919'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2019-12-26T17: 58: 13Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'handlebars'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.0.10'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDM=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'minimist before 1.2.2 could be tricked into adding or modifying properties of Object.prototype using a "constructor" or "__proto__" payload.', 'ghsaId': 'GHSA-vh95-rmgr-6w4m', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-vh95-rmgr-6w4m'
+                },
+                {'type': 'CVE', 'value': 'CVE-2020-7598'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-04-03T21: 48: 32Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'minimist'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 0.0.8'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDQ=', 'createdAt': '2020-06-07T21: 36: 49Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "### Impact\nPassing HTML containing `<option>` elements from untrusted sources - even after sanitizing them - to one of jQuery's DOM manipulation methods (i.e. `.html()`, `.append()`, and others) may execute untrusted code.\n\n### Patches\nThis problem is patched in jQuery 3.5.0.\n\n### Workarounds\nTo workaround this issue without upgrading, use [DOMPurify](https://github.com/cure53/DOMPurify) with its `SAFE_FOR_JQUERY` option to sanitize the HTML string before passing it to a jQuery method.\n\n### References\nhttps://blog.jquery.com/2020/04/10/jquery-3-5-0-released/\n\n### For more information\nIf you have any questions or comments about this advisory, search for a relevant issue in [the jQuery repo](https://github.com/jquery/jquery/issues). If you don't find an answer, open a new issue.", 'ghsaId': 'GHSA-jpcq-cgw6-v4j6', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-jpcq-cgw6-v4j6'
+                },
+                {'type': 'CVE', 'value': 'CVE-2020-11023'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-04-29T22: 19: 14Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'jquery'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.2.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDU=', 'createdAt': '2020-06-07T21: 36: 50Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "### Impact\nPassing HTML from untrusted sources - even after sanitizing it - to one of jQuery's DOM manipulation methods (i.e. `.html()`, `.append()`, and others) may execute untrusted code.\n\n### Patches\nThis problem is patched in jQuery 3.5.0.\n\n### Workarounds\nTo workaround the issue without upgrading, adding the following to your code:\n\n```js\njQuery.htmlPrefilter = function( html ) {\n\treturn html;\n};\n```\n\nYou need to use at least jQuery 1.12/2.2 or newer to be able to apply this workaround.\n\n### References\nhttps://blog.jquery.com/2020/04/10/jquery-3-5-0-released/\nhttps://jquery.com/upgrade-guide/3.5/\n\n### For more information\nIf you have any questions or comments about this advisory, search for a relevant issue in [the jQuery repo](https://github.com/jquery/jquery/issues). If you don't find an answer, open a new issue.", 'ghsaId': 'GHSA-gxr4-xjj5-5px2', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-gxr4-xjj5-5px2'
+                },
+                {'type': 'CVE', 'value': 'CVE-2020-11022'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-04-29T22: 18: 55Z', 'severity': 'MODERATE'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'jquery'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 3.2.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMDg3NDI5MDY=', 'createdAt': '2020-06-07T21: 36: 50Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': "the web framework using ljharb's qs module older than v6.3.2, v6.2.3, v6.1.2, and v6.0.4 is vulnerable to a DoS. A malicious user can send a evil request to cause the web framework crash.", 'ghsaId': 'GHSA-gqgv-6jq5-jjj9', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-gqgv-6jq5-jjj9'
+                },
+                {'type': 'CVE', 'value': 'CVE-2017-1000048'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-04-30T17: 16: 47Z', 'severity': 'HIGH'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'qs'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 6.2.1'
+    },
+    {'id': 'MDI4OlJlcG9zaXRvcnlWdWxuZXJhYmlsaXR5QWxlcnQzMzMwNDEyOTQ=', 'createdAt': '2020-07-19T07: 37: 36Z', 'dismissReason': None, 'dismissedAt': None, 'dismisser': None, 'securityAdvisory': {'description': 'Versions of lodash prior to 4.17.19 are vulnerable to Prototype Pollution. The function zipObjectDeep allows a malicious user to modify the prototype of Object if the property identifiers are user-supplied. Being affected by this issue requires zipping objects based on user-provided property arrays.\n\nThis vulnerability causes the addition or modification of an existing property that will exist on all objects and may lead to Denial of Service or Code Execution under specific circumstances.', 'ghsaId': 'GHSA-p6mc-m468-83gw', 'identifiers': [
+                {'type': 'GHSA', 'value': 'GHSA-p6mc-m468-83gw'
+                },
+                {'type': 'CVE', 'value': 'CVE-2020-8203'
+                }
+            ], 'origin': 'UNSPECIFIED', 'publishedAt': '2020-07-15T19: 15: 48Z', 'severity': 'LOW'
+        }, 'securityVulnerability': {'package': {'ecosystem': 'NPM', 'name': 'lodash'
+            }
+        }, 'vulnerableManifestFilename': 'package-lock.json', 'vulnerableManifestPath': 'owa/package-lock.json', 'vulnerableRequirements': '= 4.17.4'
+    }
+]

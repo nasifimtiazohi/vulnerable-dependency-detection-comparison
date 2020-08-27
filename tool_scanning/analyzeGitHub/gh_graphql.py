@@ -22,19 +22,36 @@ def getDependencyAlerts(repo_owner, repo_name):
                         nodes {
                             id
                             createdAt
+                            dismissReason
+                            dismissedAt
+                            dismisser{
+                                login
+                            }
+                            
                             securityAdvisory{
                             description
-                            origin
+                            ghsaId
                             identifiers{
                                 type
                                 value
                             }
+                            origin
+                            publishedAt
+                            severity
                             }
+                        
+                            
                             securityVulnerability{
                             package{
+                                ecosystem
                                 name
                             }
                             }
+                            
+                            
+                            vulnerableManifestFilename
+                            vulnerableManifestPath
+                            vulnerableRequirements
                         }
                         pageInfo{
                             hasNextPage
@@ -66,4 +83,4 @@ def getDependencyAlerts(repo_owner, repo_name):
     else:
         raise Exception('graphql call not functioning properly,')
 if __name__=='__main__':
-    print(getDependencyAlerts('nasifimtiazohi','testSecurityAlert'))
+    print(getDependencyAlerts('RocketChat','Rocket.Chat'))

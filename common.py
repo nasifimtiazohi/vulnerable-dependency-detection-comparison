@@ -44,8 +44,13 @@ def getDependencyId(idrepo, idpackage, idtool=None):
 
 def addFromNvdApi(cve):
     url='https://services.nvd.nist.gov/rest/json/cve/1.0/'+cve
+    
+    print('fetching cve started', url)
     response=requests.get(url)
     while response.status_code != 200 :
+        if 'Unable to find' in response.content:
+            return -1
+        print(response.content)
         time.sleep(3)
         response=requests.get(url)
     print('fetched cve: ',cve)
@@ -67,16 +72,18 @@ def addFromNvdApi(cve):
     description=data['cve']['description']['description_data'][0]['value']
     description=description.replace('"','')
     
-    data=data['impact']
+    
     severity2, score2, severity3, score3 = [None] * 4
-    if 'baseMetricV2' in data.keys():
-        t=data['baseMetricV2']
-        severity2=t['severity']
-        score2=t['cvssV2']['baseScore']
-    if 'baseMetricV3' in data.keys():
-        t=data['baseMetricV3']
-        severity3= t['cvssV3']['baseSeverity']
-        score3=t['cvssV3']['baseScore']
+    if 'impact' in data.keys():
+        data=data['impact']
+        if 'baseMetricV2' in data.keys():
+            t=data['baseMetricV2']
+            severity2=t['severity']
+            score2=t['cvssV2']['baseScore']
+        if 'baseMetricV3' in data.keys():
+            t=data['baseMetricV3']
+            severity3= t['cvssV3']['baseSeverity']
+            score3=t['cvssV3']['baseScore']
     
     insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
     try:
@@ -90,6 +97,8 @@ def addFromNvdApi(cve):
     
     idvulnerability = getVulnerabilityId(cve, None)
     addCWEs(idvulnerability, cwes)
+    
+    return 1
 
 def addCWEs(vulnerabilityId, cwes):
     q='insert into vulnerabilityCWE values(%s,%s)'
@@ -184,7 +193,10 @@ def getVulnerabilityId(cveId, sourceId):
         
     if not results:
         if cveId and not sourceId:
-            addFromNvdApi(cveId)
+            e = addFromNvdApi(cveId)
+            if e==-1:
+                #unable to find the cve
+                return e
         else:
             #TODO 
             pass
@@ -201,10 +213,11 @@ def addScanTime(toolId, minutes):
     sql.execute(q,(toolId, minutes))
 
 if __name__=='__main__':
-    selectQ='''select id from vulnerability where
-                packageId=%s and cveId=%s and sourceId=null'''
-    results= sql.execute(selectQ,(2,'CVE-2016-5007'))
-    print(results)
-        
+    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    print('adsasd')
+    sql.execute(insertQ,(None, 'NVD', 
+                            'CVE-2019-5428', None, 
+                            None, '** REJECT ** DO NOT USE THIS CANDIDATE NUMBER. ConsultIDs: CVE-2019-11358. Reason: This candidate is a duplicate of CVE-2019-11358. Notes: All CVE users should reference CVE-2019-11358 instead of this candidate. All references and descriptions in this candidate have been removed to prevent accidental usage.', 
+                            None, None, None, None))   
     
     
