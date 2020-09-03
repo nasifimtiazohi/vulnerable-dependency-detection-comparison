@@ -29,7 +29,7 @@ def language_breakdown(repoPath):
 def dependencyFileAnalysis(repoPath, langBreakdown):
     hm = {
         'Java': ['pom.xml'],
-        'JavaScript': ['package.json', 'package-lock.json'],
+        'npm': ['package.json', 'package-lock.json'],
         'Ruby': ['Gemfile','gemspec','Gemfile.lock']
     }
     

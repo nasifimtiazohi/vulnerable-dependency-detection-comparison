@@ -4,6 +4,7 @@ import json
 import time
 import os
 from dateutil import parser as dt
+import hashlib
 
 def getPackageId(group, artifact, version, ecosystem=None):
     selectQ= 'select * from package where artifact=%s and version =%s'
@@ -175,7 +176,6 @@ def getToolId(name):
         results=sql.execute(selectQ,(name,))
     return results[0]['id']
         
-
 def getVulnerabilityId(cveId, sourceId):
     def selectId():
         nonlocal cveId, sourceId
@@ -218,8 +218,12 @@ def addScanTime(toolId, minutes):
         q='update scantime set minutes=%s where toolId=%s'
         sql.execute(q,(minutes, toolId))
 
+def encrypt_string(hash_string):
+    sha_signature = hashlib.sha256(hash_string.encode()).hexdigest()
+    return sha_signature
+
 def getDependencyPathId(path):
-    h = hash(path)
+    h = encrypt_string(path)
     selectQ = 'select id from dependencyPath where hash=%s'
     results = sql.execute(selectQ,(h,))
     if not results:
@@ -229,11 +233,6 @@ def getDependencyPathId(path):
     return results[0]['id']
 
 if __name__=='__main__':
-    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-    print('adsasd')
-    sql.execute(insertQ,(None, 'NVD', 
-                            'CVE-2019-5428', None, 
-                            None, '** REJECT ** DO NOT USE THIS CANDIDATE NUMBER. ConsultIDs: CVE-2019-11358. Reason: This candidate is a duplicate of CVE-2019-11358. Notes: All CVE users should reference CVE-2019-11358 instead of this candidate. All references and descriptions in this candidate have been removed to prevent accidental usage.', 
-                            None, None, None, None))   
+      print(encrypt_string('org.openmrs.module:fhir-api-2.2@1.20.0->org.openmrs.test:openmrs-test@2.2.0->org.dbunit:dbunit@2.5.4->org.apache.poi:poi-ooxml@3.14'))
     
     

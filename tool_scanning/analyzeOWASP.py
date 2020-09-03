@@ -1,4 +1,5 @@
 import sys, os
+sys.path.append('..')
 import common, sql
 import csv
 import pandas as pd
@@ -116,54 +117,52 @@ def getVulnerabiltyId(dependency, packageId, source, cve, cwe, cpe,
 
 
 #path to openmrs
-def process_alerts(path):
-    print(path, " has started")
+def processMavenProjects(path):
+    print('scanning ', path)
     os.chdir(path)
+    
     repo=path.split('/')[-1]
     repoId=common.getRepoId(repo)
 
-    if common.alertAlreadyProcessed(repoId,'owasp'):
-        return
-
-    os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
+    #maven call
+    os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV -DenableExperimental')
 
     depfilename="dependency-check-report.csv"
-    #files=(os.popen('find ./ -name "{}"'.format(depfilename)).read()).split("\n")[:-1]
-    files=['./target/'+depfilename] #will only read the root file
+    file='./target/'+depfilename
+    
+    df= pd.read_csv(file, sep=',')
+    
+    if len(df) == 0:
+        return
+    
+    df=redesignColumns(df)
 
-    for file in files:
-        df= pd.read_csv(file, sep=',')
-        
-        if len(df) == 0:
-            continue
-        
-        df=redesignColumns(df)
+    df['repoId']=[repoId]*len(df)
 
-        df['repoId']=[repoId]*len(df)
+    df['packageId']=df.apply(lambda row: getPackageId(row.dependency, row.package),axis=1)
+    
+    df = df.astype(object).where(pd.notnull(df),'null')
 
-        df['packageId']=df.apply(lambda row: getPackageId(row.dependency, row.package),axis=1)
-        
-        df = df.astype(object).where(pd.notnull(df),'null')
+    df['vulnerabilityId']=df.apply(lambda row: getVulnerabiltyId(row.dependency, row.packageId, row.source, 
+                    row.CVE, row.CWE, row.CPE,
+                    row.description, row.vulnerability, row.CVSS2_severity,
+                    row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
 
-        df['vulnerabilityId']=df.apply(lambda row: getVulnerabiltyId(row.dependency, row.packageId, row.source, 
-                        row.CVE, row.CWE, row.CPE,
-                        row.description, row.vulnerability, row.CVSS2_severity,
-                        row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
+    df['dependencyId']=df.apply(lambda row: getDependencyId(row.repoId, row.packageId), axis=1) 
+    df['tool']='owasp'
+    df=df[['scandate','dependencyId','vulnerabilityId','confidence','tool']]
 
-        df['dependencyId']=df.apply(lambda row: getDependencyId(row.repoId, row.packageId), axis=1) 
-        df['tool']='owasp'
-        df=df[['scandate','dependencyId','vulnerabilityId','confidence','tool']]
-
-        df['id']=[np.nan] *len(df)
-        df.drop_duplicates()
-        sql.load_df('alert',df)
+    df['id']=[np.nan] *len(df)
+    df.drop_duplicates()
+    sql.load_df('alert',df)
 
 
 if __name__=='__main__':
     repos=common.getWatchedRepos()
     for path in repos:
-        os.chdir(path)
-        os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV')
-        process_alerts(path)
+        processMavenProjects(path)
+    
+    repos = common.getNonMavenProjects()
+    print(repos)
     
     

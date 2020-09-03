@@ -66,7 +66,7 @@ def processMavenAlert(repoId, alert):
 
 def processNpmAlert(repoId, alert):
     artifact = alert['securityVulnerability']['package']['name']
-    group='javascript'
+    group='npm'
     query='''select *
         from dependency d
         join package p

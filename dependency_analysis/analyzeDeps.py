@@ -54,7 +54,7 @@ def addNodeDependencies(repoId, path):
         return
     
     df['packageId']=df.apply(lambda row:
-        getPackageId('javascript', row.package, row.version, 'npm'), axis=1)
+        getPackageId('npm', row.package, row.version, 'npm'), axis=1)
     df.drop(['package','version'], axis=1, inplace=True)
     df['repositoryId']=[repoId]*len(df)
     sql.load_df('npmDependencyTree',df)

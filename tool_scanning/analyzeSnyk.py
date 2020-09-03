@@ -85,7 +85,7 @@ def processNpmModules(repoId, npmModules):
         for vuln in module['vulnerabilities']:
             artifact = vuln['moduleName']
             version = vuln['version']
-            packageId = common.getPackageId('javascript',artifact,version)
+            packageId = common.getPackageId('npm',artifact,version)
             dependencyId = common.getDependencyId(repoId, packageId)
             
             dependencyPath = constructDependencyPath(vuln['from'])

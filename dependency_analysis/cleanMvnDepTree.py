@@ -7,7 +7,7 @@ q='''select *
 from dependency d
 join package p on d.packageId = p.id
 where `group` not like %s
-and `group` != 'javascript';'''
+and `group` != 'npm';'''
 deps= sql.execute(q,('%openmrs%',))
 print(len(deps))
 

@@ -3,7 +3,7 @@ Distro contains 44 projects.
 43 are maven projects which are 
 cloned and checked out through this script.
 The other one, OWA module called sysadmin
-is a javascript package 
+is a npm package 
 and not covered by maven SDK.
 Therefore, it is cloned and processed individually.
 '''
@@ -40,7 +40,7 @@ def readPom(file):
             group='org.openmrs.contrib'
             repoName='openmrs-contrib-'+artifact
         elif artifact == 'sysadmin':
-            group = 'javascript'
+            group = 'npm'
             repoName = 'openmrs-owa-'+artifact
         else:
             group='org.openmrs.module'
