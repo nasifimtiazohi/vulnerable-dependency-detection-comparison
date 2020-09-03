@@ -21,7 +21,7 @@ def getDependencyId(idrepo, idpackage, idtool=None):
             repositoryId=%s and packageId=%s'''
     results = sql.execute(selectQ,(idrepo,idpackage))
     if not results:
-        insertQ = 'insert into dependency values(%s,%s%s)'
+        insertQ = 'insert into dependency values(%s,%s,%s)'
         sql.execute(insertQ,(None,idrepo,idpackage))
         results = sql.execute(selectQ,(idrepo,idpackage))
     iddependency= results[0]['id']
@@ -48,7 +48,7 @@ def addFromNvdApi(cve):
     print('fetching cve started', url)
     response=requests.get(url)
     while response.status_code != 200 :
-        if 'Unable to find' in response.content:
+        if 'Unable to find' in response.text:
             return -1
         print(response.content)
         time.sleep(3)
@@ -198,8 +198,7 @@ def getVulnerabilityId(cveId, sourceId):
                 #unable to find the cve
                 return e
         else:
-            #TODO 
-            pass
+            return None
     
     results = selectId()
     
@@ -209,8 +208,25 @@ def getTimeDeltaInMinutes(diff):
     return (diff.days*1440 + diff.seconds/60)
 
 def addScanTime(toolId, minutes):
-    q= 'insert into scanTime values(%s,%s)'
-    sql.execute(q,(toolId, minutes))
+    #see if already exists
+    selectQ= 'select * from scanTime where toolId = %s'
+    results = sql.execute(selectQ, (toolId))
+    if not results:
+        q= 'insert into scanTime values(%s,%s)'
+        sql.execute(q,(toolId, minutes))
+    else:
+        q='update scantime set minutes=%s where toolId=%s'
+        sql.execute(q,(minutes, toolId))
+
+def getDependencyPathId(path):
+    h = hash(path)
+    selectQ = 'select id from dependencyPath where hash=%s'
+    results = sql.execute(selectQ,(h,))
+    if not results:
+        insertQ = 'insert into dependencyPath values (%s,%s,%s)'
+        sql.execute(insertQ,(None,h,path))
+        results = sql.execute(selectQ,(h,))
+    return results[0]['id']
 
 if __name__=='__main__':
     insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'

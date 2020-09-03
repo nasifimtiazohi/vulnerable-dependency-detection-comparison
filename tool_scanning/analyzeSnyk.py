@@ -40,9 +40,8 @@ def constructDependencyPath(paths):
         s+=path
     return s
     
-def addSnykInfo(vuln, repoId):
+def addSnykInfo(vuln, dependencyPathId, repoId, ecosystem):
     snykId = vuln['id']
-    dependencyPath = constructDependencyPath(vuln['from'])
     isUpgradable = vuln['isUpgradable']
     isPatchable = vuln['isPatchable']
     proprietary = vuln['proprietary']
@@ -52,11 +51,11 @@ def addSnykInfo(vuln, repoId):
         depType=None
     
     
-    insertQ=  'insert into snyk values(%s,%s,%s,%s,%s,%s,%s,%s)'
+    insertQ=  'insert into snyk values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
     try:
-        sql.execute(insertQ,(None, snykId, repoId, dependencyPath,
+        sql.execute(insertQ,(None, snykId, repoId, dependencyPathId,
                              isUpgradable, isPatchable,
-                              depType, proprietary))
+                              depType, proprietary, ecosystem))
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print('snykinfo already present')
@@ -78,6 +77,7 @@ def addVulnerabilityInfo(vulnId, vuln):
             print('vulnerability info snyk already present')
             return
 
+
 def processNpmModules(repoId, npmModules):
     d = {}
     
@@ -87,6 +87,9 @@ def processNpmModules(repoId, npmModules):
             version = vuln['version']
             packageId = common.getPackageId('javascript',artifact,version)
             dependencyId = common.getDependencyId(repoId, packageId)
+            
+            dependencyPath = constructDependencyPath(vuln['from'])
+            dependencyPathId = common.getDependencyPathId(dependencyPath)
 
             ids = vuln['identifiers']
             severity = vuln['severity']
@@ -104,12 +107,12 @@ def processNpmModules(repoId, npmModules):
                 addVulnerabilityInfo(vulnId, vuln)
             
             for vulnId in vulnIds:
-                if (vulnId, dependencyId) not in d:
-                    d[(vulnId, dependencyId)] = {'count':1, 'severity':severity}
+                if (vulnId, dependencyId, dependencyPathId) not in d:
+                    d[(vulnId, dependencyId, dependencyPathId)] = {'count':1, 'severity':severity}
                 else:
-                    d[(vulnId, dependencyId)]['count']+=1
+                    d[(vulnId, dependencyId, dependencyPathId)]['count']+=1
             
-            addSnykInfo(vuln,repoId)
+            addSnykInfo(vuln, dependencyPathId, repoId, 'npm')
     
     return d
         
@@ -125,6 +128,9 @@ def processMavenModules(repoId, mavenModules):
             version = vuln['version']
             packageId = common.getPackageId(group,artifact,version)
             dependencyId = common.getDependencyId(repoId, packageId)
+            
+            dependencyPath = constructDependencyPath(vuln['from'])
+            dependencyPathId = common.getDependencyPathId(dependencyPath)
 
             ids = vuln['identifiers']
             severity = vuln['severity']
@@ -154,7 +160,7 @@ def processMavenModules(repoId, mavenModules):
                 else:
                     d[(vulnId, dependencyId)]['count']+=1
             
-            addSnykInfo(vuln,repoId)
+            addSnykInfo(vuln, dependencyPathId, repoId, 'maven')
                     
 
     return d
@@ -172,22 +178,23 @@ def addMavenAlerts(vuln):
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
-                print('alert exists already in db')       
+                print('maven alert exists already in db')       
 
 def addNpmAlerts(vuln):
     scandate= datetime.now()
-    for (vulnerabilityId, dependencyId) in vuln.keys():
-        count= vuln[(vulnerabilityId, dependencyId)]['count']
-        severity = vuln[(vulnerabilityId, dependencyId)]['severity']
+    for (vulnerabilityId, dependencyId, dependencyPathId) in vuln.keys():
+        count= vuln[(vulnerabilityId, dependencyId, dependencyPathId)]['count']
+        severity = vuln[(vulnerabilityId, dependencyId, dependencyPathId)]['severity']
         
-        insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
+        insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
+                                 dependencyPathId,
                                  toolId, None, severity, count))
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
-                print('alert exists already in db')  
+                print('npm alert exists already in db')  
             
                     
 
@@ -233,10 +240,6 @@ def scanAndProcess(path):
     
 
 if __name__=='__main__':
-    #as we can't set a key on dependencyPath in snyk table
-    # we make sure truncation here to avoid duplication
-    sql.execute('truncate table snyk')
-    
     repos=common.getAllRepos()
     scantime = 0
     for path in repos:
