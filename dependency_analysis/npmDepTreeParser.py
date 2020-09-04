@@ -1,5 +1,7 @@
 import subprocess, shlex
 import os, sys
+sys.path.append('..')
+import common, sql
 import json
 import pandas as pd
 
@@ -22,7 +24,6 @@ def get_package_info(path):
     return data['name'], data['version']
     
       
-
 def read_dependency_tree(hm, dependencyTree, depType, depth=1):
     for project in dependencyTree.keys():
         if 'peerMissing' in dependencyTree[project].keys():
@@ -33,18 +34,29 @@ def read_dependency_tree(hm, dependencyTree, depType, depth=1):
         if project not in hm:
             hm[project] = {version: {'depth':[depth], 'type':[depType]}}
         else:
-            if version not in hm:
+            if version not in hm[project]:
                 hm[project][version]={'depth':[depth], 'type':[depType]}
             else:
-                if depth not in hm[project][version]['depth']:
-                    hm[project][version]['depth'].append(depth)
-                if depType not in hm[project][version]['type']:
-                    hm[project][version]['type'].append(depType)
+                hm[project][version]['depth'].append(depth)
+                hm[project][version]['type'].append(depType)
                     
         if 'dependencies' in dependencyTree[project].keys():
             dependencies = dependencyTree[project]['dependencies']
             read_dependency_tree(hm, dependencies, depType, depth+1)
         
+
+def all_dependencies(hm):
+    deps=[]
+    
+    for package in hm.keys():
+        for version in hm[package].keys():
+            assert len(hm[package][version]['type']) == len(hm[package][version]['depth'])
+            for i in range(0, len(hm[package][version]['depth'])):
+                depType = hm[package][version]['type'][i]
+                depth = hm[package][version]['depth'][i]
+                deps.append([package, version, depth, depType])
+    
+    return pd.DataFrame(deps, columns=['package', 'version', 'depth', 'scope'])
 
 def dedupe_dependencies(hm):
     deps=[]
@@ -97,7 +109,7 @@ def parse_dependency(path):
     if 'dependencies' in data.keys():
         read_dependency_tree(hm, data['dependencies'], 'dev') 
        
-    df = dedupe_dependencies(hm)
+    df = all_dependencies(hm)
     return df
 if __name__=='__main__':
     # path='/Users/nasifimtiaz/Desktop/test'

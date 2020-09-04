@@ -68,6 +68,7 @@ def addNodeDependencies(repoId, path):
 
 def addDepndencies():
     repos= common.getNpmPackageRepos()
+    sql.execute('truncate table npmDependencyTree')
     for repoId in repos:
         path = repos[repoId]
         print(repoId,path)
