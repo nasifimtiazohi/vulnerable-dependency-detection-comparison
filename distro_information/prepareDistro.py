@@ -103,8 +103,9 @@ def addProjectsToDB(proects):
     for project in proects.keys():
         d=projects[project]
         addRepo(d['group'],project,d['version'],d['repo'])
+        
 
-if __name__=='__main__':
+def initial_setup():
     projects = readPom('pom.xml')
     
     addProjectsToDB(projects)
@@ -123,3 +124,8 @@ if __name__=='__main__':
             continue
 
         cloneAndCheckoutVersion(k, projects[k])
+
+if __name__=='__main__':
+    projects = readPom('pom.xml')
+    print(projects)
+    

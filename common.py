@@ -5,6 +5,10 @@ import time
 import os
 from dateutil import parser as dt
 import hashlib
+import logging, coloredlogs
+import pandas as pd
+coloredlogs.install()
+
 
 def getPackageId(group, artifact, version, ecosystem=None):
     selectQ= 'select * from package where artifact=%s and version =%s'
@@ -25,22 +29,23 @@ def getDependencyId(idrepo, idpackage, idtool=None):
         insertQ = 'insert into dependency values(%s,%s,%s)'
         sql.execute(insertQ,(None,idrepo,idpackage))
         results = sql.execute(selectQ,(idrepo,idpackage))
+        iddependency= results[0]['id']
+    
+        #check if this dependency was in deptree (maven or npm)
+        q='''select * from
+            (select packageId
+            from mavenDependencyTree
+            union
+            select packageId from
+            npmDependencyTree) t
+            where packageId=%s;'''
+        check = sql.execute(q,(idpackage,))
+        if not check:
+            q='insert into dependencyFoundByTool values(%s,%s)'
+            assert idtool
+            sql.execute(q,(iddependency,idtool))
+    
     iddependency= results[0]['id']
-    
-    #check if this dependency was in deptree (maven or npm)
-    q='''select * from
-        (select packageId
-        from mavenDependencyTree
-        union
-        select packageId from
-        npmDependencyTree) t
-        where packageId=%s;'''
-    check = sql.execute(q,(idpackage,))
-    if not check:
-        q='insert into dependencyFoundByTool values(%s,%s)'
-        assert not idtool
-        sql.execute(q,(iddependency,idtool))
-    
     return iddependency
 
 def addFromNvdApi(cve):
@@ -95,6 +100,8 @@ def addFromNvdApi(cve):
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print(cve, ' already exists')
+        else:
+            raise Exception(str(error))
     
     idvulnerability = getVulnerabilityId(cve, None)
     addCWEs(idvulnerability, cwes)
@@ -112,6 +119,8 @@ def addCWEs(vulnerabilityId, cwes):
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 return
+            else:
+                raise Exception(str(error))
         
 
 def getRepoId(repo):
@@ -157,8 +166,11 @@ def getNpmPackageRepos():
             packagePath= item['file'].split('/')[:-1] #cut package.json filename
             repos[repoId] = repoPath + '/' + '/'.join(packagePath)
     
-    return repos
-
+    paths = []
+    for k in repos.keys():
+        paths.append(repos[k])
+    
+    return paths
 
 def getNonMavenProjects():
     repos=['/Users/nasifimtiaz/openmrs/openmrs-owa-sysadmin']
@@ -198,24 +210,28 @@ def getVulnerabilityId(cveId, sourceId):
                 #unable to find the cve
                 return e
         else:
-            return None
+            return -1
     
-    results = selectId()
+        results = selectId()
     
     return results[0]['id']
 
 def getTimeDeltaInMinutes(diff):
     return (diff.days*1440 + diff.seconds/60)
 
-def addScanTime(toolId, minutes):
+def addScanTime(toolId, minutes, ecosystem):
     #see if already exists
-    selectQ= 'select * from scanTime where toolId = %s'
-    results = sql.execute(selectQ, (toolId))
+    selectQ= 'select * from scanMinutes where toolId = %s'
+    results = sql.execute(selectQ, (toolId,))
     if not results:
-        q= 'insert into scanTime values(%s,%s)'
-        sql.execute(q,(toolId, minutes))
-    else:
-        q='update scantime set minutes=%s where toolId=%s'
+        q= 'insert into scanMinutes values(%s,%s,%s)'
+        sql.execute(q,(toolId,None,None))
+        
+    if ecosystem == 'maven':    
+        q='update scanMinutes set maven=%s where toolId=%s'
+        sql.execute(q,(minutes, toolId))
+    elif ecosystem == 'npm':
+        q='update scanMinutes set npm=%s where toolId=%s'
         sql.execute(q,(minutes, toolId))
 
 def encrypt_string(hash_string):
@@ -232,7 +248,29 @@ def getDependencyPathId(path):
         results = sql.execute(selectQ,(h,))
     return results[0]['id']
 
+def changeNaNToNone(val):
+    if pd.isna(val):
+        return None
+    else:
+        return val
+
+
+def getSubdirectoryNPMpaths():
+    q='''select * from repoDependencyFiles rDF
+        join repository r on rDF.repositoryId = r.id
+        where file like %s and file not like %s'''
+    results = sql.execute(q,('%package.json','package.json'))
+    hm = {}
+    for item in results:
+        path = '/Users/nasifimtiaz/openmrs/' + item['repoName'] +'/' + item['file']
+        path=path[:-len('/package.json')]
+        repoId = item['repositoryId']
+        
+        assert repoId not in hm #TODO change for future types
+        
+        hm[repoId]=path
+    
+    return hm
+
 if __name__=='__main__':
-      print(encrypt_string('org.openmrs.module:fhir-api-2.2@1.20.0->org.openmrs.test:openmrs-test@2.2.0->org.dbunit:dbunit@2.5.4->org.apache.poi:poi-ooxml@3.14'))
-    
-    
+    print(getSubdirectoryNPMpaths())

@@ -141,7 +141,7 @@ def owaspVulnerabiltyId(dependency, source, cve, cwe,
                             CVSS2_score, CVSS2_severity, CVSS3_score, CVSS3_severity))
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
-            print(cve, ' already exists')
+            print(sourceId, ' already exists')
         else:
             raise Exception(str(error))
         
@@ -259,6 +259,8 @@ if __name__=='__main__':
     npmRepos = common.getNpmPackageRepos()
     mavenScantime = 0
     npmScantime = 0
+    
+    #TODO: perform an npm install on npm paths
     
     repos=common.getWatchedRepos()
     for path in repos:
