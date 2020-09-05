@@ -30,7 +30,6 @@ def addSnykVulenrability(vuln):
             
     return results[0]['id']
 
-
 def constructDependencyPath(paths):
     assert type(paths) == list
     s = ''
@@ -60,6 +59,8 @@ def addSnykInfo(vuln, dependencyPathId, repoId, ecosystem):
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print('snykinfo already present')
             return
+        else:
+            raise Exception(str(error))
     
 def addVulnerabilityInfo(vulnId, vuln):
     if 'fixedIn' in vuln and vuln['fixedIn']:
@@ -76,6 +77,8 @@ def addVulnerabilityInfo(vulnId, vuln):
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print('vulnerability info snyk already present')
             return
+        else:
+            raise Exception(str(error))
 
 
 def processNpmModules(repoId, npmModules):
@@ -95,13 +98,19 @@ def processNpmModules(repoId, npmModules):
             severity = vuln['severity']
             
             vulnIds=[]
+            snykFlag = True
             if ids['CVE']:
+                snykFlag=False
                 #CVE id present
                 for cve in ids['CVE']:
                     vulnId = common.getVulnerabilityId(cve, None)
+                    if vulnId == -1:
+                        if len(ids['CVE']) == 1:
+                            snykFlag = True
+                        continue
                     vulnIds.append(vulnId)
                     addVulnerabilityInfo(vulnId, vuln)
-            else:
+            if snykFlag:
                 vulnId = addSnykVulenrability(vuln)
                 vulnIds.append(vulnId)
                 addVulnerabilityInfo(vulnId, vuln)
@@ -126,6 +135,7 @@ def processMavenModules(repoId, mavenModules):
             group= vuln['mavenModuleName']['groupId']
             artifact = vuln['mavenModuleName']['artifactId']
             version = vuln['version']
+            
             packageId = common.getPackageId(group,artifact,version)
             dependencyId = common.getDependencyId(repoId, packageId)
             
@@ -143,10 +153,9 @@ def processMavenModules(repoId, mavenModules):
                 for cve in ids['CVE']:
                     vulnId = common.getVulnerabilityId(cve, None)
                     if vulnId == -1:
-                        if len(ids['CVE']) > 1:
-                            continue
-                        else:
+                        if len(ids['CVE']) == 1:
                             snykFlag = True
+                        continue
                     vulnIds.append(vulnId)
                     addVulnerabilityInfo(vulnId, vuln)
             if snykFlag:
@@ -170,7 +179,6 @@ def addMavenAlerts(vuln):
     for (vulnerabilityId, dependencyId) in vuln.keys():
         count= vuln[(vulnerabilityId, dependencyId)]['count']
         severity = vuln[(vulnerabilityId, dependencyId)]['severity']
-        
         insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
         try:
             sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
@@ -178,7 +186,9 @@ def addMavenAlerts(vuln):
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
-                print('maven alert exists already in db')       
+                print('maven alert exists already in db')     
+            else:  
+                raise Exception(str(error))
 
 def addNpmAlerts(vuln):
     scandate= datetime.now()
@@ -194,7 +204,12 @@ def addNpmAlerts(vuln):
         except sql.pymysql.IntegrityError as error:
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
-                print('npm alert exists already in db')  
+                print('npm alert exists already in db') 
+            else:
+                print((None,scandate,dependencyId,vulnerabilityId,
+                                 dependencyPathId,
+                                 toolId, None, severity, count))
+                raise Exception(str(error)) 
             
                     
 
@@ -241,8 +256,18 @@ def scanAndProcess(path):
 
 if __name__=='__main__':
     repos=common.getAllRepos()
-    scantime = 0
+    mavenRepos= common.getWatchedRepos()
+    npmRepos = common.getNpmPackageRepos()
+    mavenScantime = 0
+    npmScantime = 0
     for path in repos:
-        scantime += scanAndProcess(path)
+        time = scanAndProcess(path)
+        common.logging.info("%s took %s minutes",path, time)
+        if path in mavenRepos:
+            mavenScantime +=time
+        if path in npmRepos:
+            npmScantime +=time
     
-    common.addScanTime(toolId, scantime)
+    print(mavenScantime, npmScantime)
+    common.addScanTime(toolId, mavenScantime, 'maven')
+    common.addScanTime(toolId, npmScantime, 'npm')

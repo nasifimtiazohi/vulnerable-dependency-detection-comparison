@@ -4,165 +4,298 @@ import common, sql
 import csv
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
+toolId = common.getToolId('OWASP Dependency-Check')
+file=open('owasplog.txt','w')
 
 def redesignColumns(df):
-    keep=['ScanDate', 'DependencyName', 'Description',
-        'Identifiers','CPE', 'CVE',
-       'CWE', 'Vulnerability', 'Source', 'CVSSv2_Severity', 'CVSSv2_Score',
-       'CVSSv3_BaseSeverity', 'CVSSv3_BaseScore', 'CPE Confidence' ]
+    keep=['ScanDate', 'DependencyName', 'DependencyPath', 'Description',
+        'Identifiers','CPE', 'CVE','CWE', 
+        'Vulnerability', 'Source', 
+        'CVSSv2_Severity', 'CVSSv2_Score','CVSSv3_BaseSeverity', 'CVSSv3_BaseScore', 
+       'CPE Confidence', 'Evidence Count' ]
     df=df[keep]
-    new_names=['scandate', 'dependency', 'description',
-        'package','CPE' , 'CVE',
-       'CWE', 'vulnerability', 'source', 'CVSS2_severity', 'CVSS2_score',
-       'CVSS3_severity', 'CVSS3_score', 'confidence' ]
+    new_names=['scandate', 'dependency', 'dependencyPath','description',
+        'identifier','CPE' , 'CVE', 'CWE', 
+        'vulnerability', 'source', 
+        'CVSS2_severity', 'CVSS2_score','CVSS3_severity', 'CVSS3_score', 
+        'confidence', 'evidenceCount' ]
     df.columns= new_names
     return df
 
-
-def getPackageId(dependency, identifier):
-    dep=str(dependency)
-    if dep.endswith('.jar'):
-        #handle exception cases
-        if dep.count('jar') > 1:
-            dep=dep.split('jar:')
-            dep=dep[-1].strip()
-
-        dep=dep[:-4]
-
-        #handle exception case
-        if dep == 'gradle-wrapper':
-            artifact=dep
-            selectQ='select id from package where artifact="{}" and version="undefined"'.format(artifact)
-            results=sql.execute(selectQ)
-            if not results:
-                insertQ='insert into package values(null,null,"{}","undefined", "owasp")'.format(artifact)
-                sql.execute(insertQ)
-                results= sql.execute(selectQ)
-            return results[0]['id']
+def parseMavenIdentifier(dependency, identifier):
+    print(dependency, identifier)
+    if 'dwr-2.0.7-mod' in dependency: #corener case hardcoded
+        return 'org.openmrs.directwebremoting', 'dwr', '2.0.7-mod'
+    
+    if ',' in identifier:
+        file.write(dependency)
+        identifier=identifier.split(',')[-1].strip()
+    
+    if identifier.startswith('pkg:maven/'):
+        fullname = identifier[len('pkg:maven/'):]
         
-        else:
-            q='''select id
-                from package
-                where concat(artifact,'-',version) = '{}';'''.format(dep)
-            try:
-                return sql.execute(q)[0]['id']
-            except Exception as e:
-                raise Exception(q,e)
+        assert fullname.count('@') == 1
+        fullname, version = fullname.split('@')
+        
+        assert fullname.count('/') == 1
+        group, artifact = fullname.split('/')
+        
+        return group, artifact, version
+    
+    elif identifier.startswith('pkg:javascript/'):
+        assert dependency.endswith('js')
+        artifact = dependency.split(':')[-1]
+        artifact = artifact[:-len('.js')]
+        
+        fullname = identifier[len('pkg:javascript/'):]
+        group='javascript'
+        assert fullname.count('@') == 1
+        version = fullname.split('@')[1]
+        return group, artifact, version
+        
     else:
-        #get name and version from the package
-        templist=identifier.split("/")
-        group=templist[-2]
-        if ':' in group:
-            group=group.split(':')[-1]
-        temp=templist[-1]
-        #TODO: error checking if not in desired format 
-        temp=temp.split("@")
-        artifact=temp[0]
-        version=temp[1]
-        source='owasp'
-        return common.getPackageId(group,artifact,version,source)
+        raise Exception('check this ', dependency, identifier)  
     
-def getDependencyId(repoId, packageId):
-    selectQ='''select id from dependency where 
-            repositoryId={} and packageId={}'''.format(repoId,packageId)
-    results = sql.execute(selectQ)
-    if not results:
-        insertQ='''insert into dependency values (null,
-                    {},{}); '''.format(repoId,packageId)
-        sql.execute(insertQ)
-        results = sql.execute(selectQ)
-    return results[0]['id']
+def getMavenPackageId(dependency: str, identifier: str):
+    group, artifact, version = parseMavenIdentifier(dependency, identifier)
     
+    return common.getPackageId(group, artifact, version, 'maven')
+    
+def parseNPMIdentifier(dependency, identifier):
+    print(dependency, identifier)
+    if ',' in identifier:
+        file.write(dependency)
+        identifier=identifier.split(',')[-1].strip()
+        
+    if identifier.startswith('pkg:npm/'):
+        assert (dependency.split(':') == identifier[len('pkg:npm/'):].split('@') or '@' in dependency)
+        group = 'npm'
+        artifact, version = dependency.split(':')
+        
+        return group, artifact, version
+    elif identifier.startswith('pkg:javascript/'):
+        assert dependency.endswith('js')
+        artifact = dependency.split(':')[-1]
+        artifact = artifact[:-len('.js')]
+        
+        fullname = identifier[len('pkg:javascript/'):]
+        group='javascript'
+        assert fullname.count('@') == 1
+        version = fullname.split('@')[1]
+        
+        return group, artifact, version
+    else:
+        raise Exception('check this ', dependency, identifier)
+
+def getNPMPackageId(dependency: str, identifier: str):
+    group, artifact, version = parseNPMIdentifier(dependency, identifier)
+    
+    return common.getPackageId(group, artifact, version, 'npm')
 
 
-
-
-
-def getVulnerabiltyId(dependency, packageId, source, cve, cwe, cpe,
-                    description, vulnerability, CVSS2_severity,
-                    CVSS2_score, CVSS3_severity, CVSS3_score ):
+def owaspVulnerabiltyId(dependency, source, cve, cwe, 
+                    description, vulnerability, 
+                    CVSS2_severity, CVSS2_score, CVSS3_severity, CVSS3_score ):
+    
     if cve.startswith('CVE'):
-        CVE=cve
-        nonCVE='None'
+        vulnId = common.getVulnerabilityId(cve, None)
+        if vulnId > 0:
+            return vulnId
+        
+    
+    
+    
+    #non CVEs for OWASP can vary based on both dependency and description in cve columns
+    sourceId = '-'.join(['OWASP', cve, dependency])
+    vulnId = common.getVulnerabilityId(None, sourceId)
+    if vulnId > 0 :
+        return vulnId
+    
+    #nan values are creating issue for pymysql
+    args = (dependency, source, cve, cwe, 
+                    description, vulnerability, 
+                    CVSS2_severity, CVSS2_score, CVSS3_severity, CVSS3_score)
+    dependency, source, cve, cwe, description, vulnerability, \
+    CVSS2_severity, CVSS2_score, \
+    CVSS3_severity, CVSS3_score = map(common.changeNaNToNone, args)
+    
+    if description:
+        description = description.replace('"',' ').replace('\\','')
+    if vulnerability:
+        vulnerability = vulnerability.replace('"',' ').replace('\\','')
+    if description or vulnerability:
+        if description:
+            description += ' : '
+        else:
+            description = ''
+        if vulnerability:
+            description+=vulnerability
+    
+    insertQ='insert into vulnerability values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    try:
+        sql.execute(insertQ,(None, source, 
+                            None, sourceId,
+                            None, description, 
+                            CVSS2_score, CVSS2_severity, CVSS3_score, CVSS3_severity))
+    except sql.pymysql.IntegrityError as error:
+        if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+            print(cve, ' already exists')
+        else:
+            raise Exception(str(error))
+        
+    vulnId = common.getVulnerabilityId(None, sourceId)
+    
+    if not cwe or 'NVD-CWE' in cwe:
+        cwes = [-1]
     else:
-        #non CVEs for OWASP can vary based on both dependency and description in cve columns
-        CVE='None'
-        nonCVE= cve + " in " + dependency 
+        cwes=[]
+        cweTexts=  cwe.split(',')
+        for text in cweTexts:
+            text=text.strip()
+            text=text.split(' ')[0]
+            assert text.startswith('CWE-')
+            id= text[len('CWE-'):] 
+            cwes.append(id)
+    
+    common.addCWEs(vulnId, cwes)
+    
+    return vulnId
+           
 
-    #string cleaning
-    cwe=cwe.replace('"',' ').replace('\\','')
-    cpe=cpe.replace('"',' ').replace('\\','')
-    description=description.replace('"',' ').replace('\\','')
-    vulnerability=vulnerability.replace('"',' ').replace('\\','')
-
-
-    selectQ= '''select id from vulnerability
-        where packageId="{}" and CVE ="{}" and nonCVE="{}"'''.format(packageId,CVE,nonCVE)
-    results=sql.execute(selectQ)
-    if results:
-        return results[0]['id']
-    else:
-        insertQ='''insert into vulnerability values (null,
-        {},"{}","{}","{}","{}","{}","{}","{}","{}",{},"{}",{});'''.format(packageId,
-        source,CVE,nonCVE,cwe,cpe,description,vulnerability,CVSS2_severity,CVSS2_score,
-        CVSS3_severity,CVSS3_score)
-        try:
-            sql.execute(insertQ)
-        except Exception as e:
-            print(insertQ, e)
-            exit()
-        return sql.execute(selectQ)[0]['id']
-
-
-
-#path to openmrs
-def processMavenProjects(path):
-    print('scanning ', path)
+def getOWASPReportAsDf(path, scanType):
     os.chdir(path)
-    
-    repo=path.split('/')[-1]
-    repoId=common.getRepoId(repo)
-
-    #maven call
-    os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV -DenableExperimental')
-
+    print('scanning ', path)
     depfilename="dependency-check-report.csv"
-    file='./target/'+depfilename
     
-    df= pd.read_csv(file, sep=',')
+    start= datetime.now()
     
-    if len(df) == 0:
+    if scanType=='maven':
+        os.system('mvn org.owasp:dependency-check-maven:aggregate -Dformat=CSV -DenableExperimental')        
+        file='./target/'+depfilename
+        df= pd.read_csv(file, sep=',')
+    
+    if scanType == 'cli':
+        os.system('dependency-check --enableExperimental --format CSV --scan ./')
+        file=depfilename
+        df= pd.read_csv(file, sep=',')
+        
+    
+    end= datetime.now()
+    
+    return df, common.getTimeDeltaInMinutes(end-start)
+
+
+def processMavenAlerts(mavenDf):
+    df=mavenDf
+    if len(df)==0:
         return
     
+    df['packageId']=df.apply(lambda row: getMavenPackageId(row.dependency, row.identifier), axis=1)
+    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId), axis=1) 
+    
+    df=df[['scandate','dependencyId','vulnerabilityId','toolId','confidence']]
+
+    df['id']=[np.nan]*len(df)
+    df['severity']=[np.nan]*len(df)
+    df['count']=[1]*len(df)
+    
+    print(df[df.duplicated()])
+    assert len(df[df.duplicated()])==0
+
+    sql.load_df('mavenAlert',df)
+
+def processNPMAlerts(npmDf):
+    df=npmDf
+    if len(df)==0:
+        return
+    
+    df['packageId']=df.apply(lambda row: getNPMPackageId(row.dependency, row.identifier),axis=1)
+    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId), axis=1)
+    df['dependencyPathId']=df.apply(lambda row: common.getDependencyPathId(row.dependencyPath), axis=1)
+    
+    df=df[['scandate','dependencyId','vulnerabilityId','dependencyPathId','toolId','confidence']]
+    
+    df['id']=[np.nan]*len(df)
+    df['severity']=[np.nan]*len(df)
+    df['count']=[1]*len(df)
+    
+    print(df[df.duplicated()])
+    assert len(df[df.duplicated()])==0
+    
+    sql.load_df('npmAlert',df)
+     
+def processAlerts(repoId, df):
+    if len(df)==0:
+        return
     df=redesignColumns(df)
 
     df['repoId']=[repoId]*len(df)
-
-    df['packageId']=df.apply(lambda row: getPackageId(row.dependency, row.package),axis=1)
+    df['toolId']=[toolId]*len(df)
+    df['vulnerabilityId']=df.apply(lambda row: owaspVulnerabiltyId(row.dependency, row.source, row.CVE, row.CWE, \
+                    row.description, row.vulnerability, \
+                    row.CVSS2_severity, row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
     
-    df = df.astype(object).where(pd.notnull(df),'null')
+    #note the path comparison here. some are hard coded. discuss themselves
+    mavenDf=df[df['dependencyPath'].str.contains('.m2/repository/') | 
+               df['dependencyPath'].str.contains('src/main/webapp/') |
+               df['dependencyPath'].str.contains('pom.xml')]
+    npmDf = df[df['dependencyPath'].str.contains('/node_modules') | 
+               df['dependencyPath'].str.contains('/npm')]
+    
+    print(repoId, len(mavenDf), len(npmDf), len(df))
+    assert len(mavenDf) + len(npmDf) == len(df)
 
-    df['vulnerabilityId']=df.apply(lambda row: getVulnerabiltyId(row.dependency, row.packageId, row.source, 
-                    row.CVE, row.CWE, row.CPE,
-                    row.description, row.vulnerability, row.CVSS2_severity,
-                    row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
-
-    df['dependencyId']=df.apply(lambda row: getDependencyId(row.repoId, row.packageId), axis=1) 
-    df['tool']='owasp'
-    df=df[['scandate','dependencyId','vulnerabilityId','confidence','tool']]
-
-    df['id']=[np.nan] *len(df)
-    df.drop_duplicates()
-    sql.load_df('alert',df)
+    processMavenAlerts(mavenDf)
+    processNPMAlerts(npmDf)
+    
+    
+    
 
 
 if __name__=='__main__':
+    mavenRepos= common.getWatchedRepos()
+    npmRepos = common.getNpmPackageRepos()
+    mavenScantime = 0
+    npmScantime = 0
+    
     repos=common.getWatchedRepos()
     for path in repos:
-        processMavenProjects(path)
-    
+        repo=path.split('/')[-1]
+        repoId=common.getRepoId(repo)
+        if repoId != 28:
+            continue
+        df, time =getOWASPReportAsDf(path, 'maven')
+        if path in mavenRepos:
+            mavenScantime += time
+        if path in npmRepos:
+            npmScantime += time 
+        processAlerts(repoId, df)
+        
     repos = common.getNonMavenProjects()
-    print(repos)
+    for path in repos:
+        repo=path.split('/')[-1]
+        repoId=common.getRepoId(repo)
+        df, time =getOWASPReportAsDf(path, 'cli')
+        if path in mavenRepos:
+            mavenScantime += time
+        if path in npmRepos:
+            npmScantime += time 
+        processAlerts(repoId, df)
+
+    paths = common.getSubdirectoryNPMpaths()
+    for repoId in paths.keys():
+        path=paths[repoId]
+        df, time =getOWASPReportAsDf(path, 'cli')
+        
+        npmScantime += time #hardcoding as know all to be maven
+        
+        processAlerts(repoId, df)
+        
     
+    print(mavenScantime, npmScantime)
+    common.addScanTime(toolId, mavenScantime, 'maven')
+    common.addScanTime(toolId, npmScantime, 'npm')
     
+    file.close()

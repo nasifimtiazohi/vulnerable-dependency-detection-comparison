@@ -67,6 +67,8 @@ def addAlerts(vuln):
             if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
                 #TODO update scandate
                 print('alert exists already in db')
+            else:
+                raise Exception(str(error))
                      
                 
 
@@ -101,4 +103,4 @@ if __name__=='__main__':
         scanTime += scanAndProcess(path)
         print(scanTime)
     
-    common.addScanTime(toolId, scanTime)
+    common.addScanTime(toolId, scanTime, 'maven')

@@ -38,7 +38,7 @@ def processMavenAlert(repoId, alert):
         dependencyId = sql.execute(query)[0]['id'] 
     except:
         print(repoId, group, artifact)
-        exit()
+        raise Exception(str(error))
     #take the first one in case of multiple versions present
     #Note: GitHub does not present version within its alert
     
@@ -62,7 +62,10 @@ def processMavenAlert(repoId, alert):
         sql.execute(q,(None,None,dependencyId,vulnId, toolId,None,severity,None))
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
-            print('alert already exists')    
+            print('alert already exists') 
+        else:
+            raise Exception(str(error))
+               
 
 def processNpmAlert(repoId, alert):
     artifact = alert['securityVulnerability']['package']['name']
@@ -78,7 +81,7 @@ def processNpmAlert(repoId, alert):
         dependencyId = sql.execute(query)[0]['id'] 
     except:
         print(repoId, group, artifact)
-        exit()
+        raise Exception(str(error))
     #take the first one in case of multiple versions present
     #Note: GitHub does not present version within its alert
     
@@ -103,6 +106,8 @@ def processNpmAlert(repoId, alert):
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print('alert already exists') 
+        else:
+            raise Exception(str(error))
 
 def processAlerts(owner, repo):
     print('processing', repo)
