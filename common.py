@@ -10,10 +10,12 @@ import pandas as pd
 coloredlogs.install()
 
 
-def getPackageId(group, artifact, version, ecosystem=None):
+def getPackageId(group, artifact, version, ecosystem=None, insertIfNotExists = False):
     selectQ= 'select * from package where artifact=%s and version =%s'
     results=sql.execute(selectQ,(artifact, version))
     if not results:
+        logging.info('new package found: %s, %s, %s',group, artifact, version)
+        assert insertIfNotExists
         assert ecosystem
         sql.execute("insert into package values(null,%s,%s,%s,%s)"
                     ,(group, artifact, version, ecosystem))
@@ -21,11 +23,13 @@ def getPackageId(group, artifact, version, ecosystem=None):
 
     return results[0]['id']
 
-def getDependencyId(idrepo, idpackage, idtool=None):
+def getDependencyId(idrepo, idpackage, idtool=None, insertIfNotExists = False):
     selectQ='''select id from dependency where 
             repositoryId=%s and packageId=%s'''
     results = sql.execute(selectQ,(idrepo,idpackage))
     if not results:
+        logging.info('new dependency found: %s',idpackage)
+        assert insertIfNotExists
         insertQ = 'insert into dependency values(%s,%s,%s)'
         sql.execute(insertQ,(None,idrepo,idpackage))
         results = sql.execute(selectQ,(idrepo,idpackage))
@@ -271,6 +275,10 @@ def getSubdirectoryNPMpaths():
         hm[repoId]=path
     
     return hm
+
+
+
+
 
 if __name__=='__main__':
     print(getSubdirectoryNPMpaths())

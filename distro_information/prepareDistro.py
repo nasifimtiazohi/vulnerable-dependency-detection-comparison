@@ -16,7 +16,7 @@ import common, sql
 import time
 serverId='distro-2-10-0'
 clonedRepos=[]
-password=os.environ['github_token']
+
 
 def readPom(file):
     pom = ET.parse(file)
@@ -99,9 +99,9 @@ def addRepo(group, artifact, version, repo):
             format(group, artifact, version,repo))
 
 
-def addProjectsToDB(proects):
-    for project in proects.keys():
-        d=projects[project]
+def addProjectsToDB(projects):
+    for project in projects.keys():
+        d= projects[project]
         addRepo(d['group'],project,d['version'],d['repo'])
         
 
@@ -124,8 +124,55 @@ def initial_setup():
             continue
 
         cloneAndCheckoutVersion(k, projects[k])
+        
+def pushGitRepo(path):
+    '''
+    check if current head at required branch/release
+    git stash changes
+    push repo to my account
+        with a changed name
+    '''
 
+def getRepoReleaseMapping():
+    projects = readPom('/Users/nasifimtiaz/Desktop/vulnerable-dependency-detection-comparison/distro_information/pom.xml')
+    hm={}
+    
+    for k  in projects.keys():
+        repo = projects[k]['repo']
+        release = projects[k]['version']
+        hm[repo]=release
+        
+    assert len(projects) == len(hm)
+    return hm
+
+def check_heads(paths):
+    repos=[]
+    for path in paths:
+        repos.append(path.split('/')[-1])
+    
+    hm=readPom('/Users/nasifimtiaz/Desktop/vulnerable-dependency-detection-comparison/pom.xml')
+
+    def find_repo_key(repo):
+        nonlocal hm
+        for k in hm.keys():
+            if hm[k]['repo']==repo:
+                return k
+
+    os.chdir('/Users/nasifimtiaz/openmrs')
+    for repo in repos:
+        os.chdir('./'+repo)
+        output=os.popen('git branch').read()
+        k=find_repo_key(repo)
+        if hm[k]['version'] not in output:
+            return False
+        os.chdir('..')
+
+    return True
+    
 if __name__=='__main__':
-    projects = readPom('pom.xml')
-    print(projects)
+    password=os.environ['github_token']
+    hm = getRepoReleaseMapping()
+    paths= common.getAllRepos()
+    print(hm,paths)
+    
     

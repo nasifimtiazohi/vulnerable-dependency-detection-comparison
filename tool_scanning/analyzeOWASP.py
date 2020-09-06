@@ -192,8 +192,8 @@ def processMavenAlerts(mavenDf):
     if len(df)==0:
         return
     
-    df['packageId']=df.apply(lambda row: getMavenPackageId(row.dependency, row.identifier), axis=1)
-    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId), axis=1) 
+    df['packageId']=df.apply(lambda row: getMavenPackageId(row.dependency, row.identifier, insertIfNotExists=True), axis=1)
+    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId, insertIfNotExists=True), axis=1) 
     
     df=df[['scandate','dependencyId','vulnerabilityId','toolId','confidence']]
 
@@ -211,8 +211,8 @@ def processNPMAlerts(npmDf):
     if len(df)==0:
         return
     
-    df['packageId']=df.apply(lambda row: getNPMPackageId(row.dependency, row.identifier),axis=1)
-    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId), axis=1)
+    df['packageId']=df.apply(lambda row: getMavenPackageId(row.dependency, row.identifier, insertIfNotExists=True), axis=1)
+    df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId, insertIfNotExists=True), axis=1) 
     df['dependencyPathId']=df.apply(lambda row: common.getDependencyPathId(row.dependencyPath), axis=1)
     
     df=df[['scandate','dependencyId','vulnerabilityId','dependencyPathId','toolId','confidence']]
