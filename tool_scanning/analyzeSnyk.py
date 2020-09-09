@@ -68,11 +68,11 @@ def addVulnerabilityInfo(vulnId, vuln):
     else:
         fixedVersion = False
     exploit = vuln['exploit']
+    snykId = vuln['id']
     
-    
-    insertQ = 'insert into vulnerabilityInfoSnyk values (%s,%s,%s)'
+    insertQ = 'insert into vulnerabilityInfoSnyk values (%s,%s,%s, %s)'
     try:
-        sql.execute(insertQ,(vulnId, fixedVersion, exploit))
+        sql.execute(insertQ,(vulnId, fixedVersion, exploit, snykId))
     except sql.pymysql.IntegrityError as error:
         if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
             print('vulnerability info snyk already present')
@@ -255,6 +255,8 @@ def scanAndProcess(path):
     
 
 if __name__=='__main__':
+    # TODO: truncate vulnerabilityInfoSnyk to insert the snykId
+    
     repos=common.getAllRepos()
     mavenRepos= common.getWatchedRepos()
     npmRepos = common.getNpmPackageRepos()

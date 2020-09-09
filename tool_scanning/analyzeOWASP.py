@@ -26,11 +26,15 @@ def redesignColumns(df):
 
 def parseMavenIdentifier(dependency, identifier):
     print(dependency, identifier)
-    if 'dwr-2.0.7-mod' in dependency: #corener case hardcoded
+    
+    #corener case hardcoding
+    if 'dwr-2.0.7-mod' in dependency: 
         return 'org.openmrs.directwebremoting', 'dwr', '2.0.7-mod'
+    if pd.isna(identifier) and 'gradle-wrapper' in dependency:
+        return 'gradle', 'gradle-wrapper', '2.12'
     
     if ',' in identifier:
-        file.write(dependency)
+        print(dependency)
         identifier=identifier.split(',')[-1].strip()
     
     if identifier.startswith('pkg:maven/'):
@@ -58,10 +62,10 @@ def parseMavenIdentifier(dependency, identifier):
     else:
         raise Exception('check this ', dependency, identifier)  
     
-def getMavenPackageId(dependency: str, identifier: str):
+def getMavenPackageId(dependency: str, identifier: str, insertIfNotExists=False):
     group, artifact, version = parseMavenIdentifier(dependency, identifier)
     
-    return common.getPackageId(group, artifact, version, 'maven')
+    return common.getPackageId(group, artifact, version, 'maven', insertIfNotExists)
     
 def parseNPMIdentifier(dependency, identifier):
     print(dependency, identifier)
@@ -89,10 +93,10 @@ def parseNPMIdentifier(dependency, identifier):
     else:
         raise Exception('check this ', dependency, identifier)
 
-def getNPMPackageId(dependency: str, identifier: str):
+def getNPMPackageId(dependency: str, identifier: str, insertIfNotExists = False):
     group, artifact, version = parseNPMIdentifier(dependency, identifier)
     
-    return common.getPackageId(group, artifact, version, 'npm')
+    return common.getPackageId(group, artifact, version, 'npm', insertIfNotExists)
 
 
 def owaspVulnerabiltyId(dependency, source, cve, cwe, 
@@ -211,7 +215,7 @@ def processNPMAlerts(npmDf):
     if len(df)==0:
         return
     
-    df['packageId']=df.apply(lambda row: getMavenPackageId(row.dependency, row.identifier, insertIfNotExists=True), axis=1)
+    df['packageId']=df.apply(lambda row: getNPMPackageId(row.dependency, row.identifier, insertIfNotExists=True), axis=1)
     df['dependencyId']=df.apply(lambda row: common.getDependencyId(row.repoId, row.packageId, row.toolId, insertIfNotExists=True), axis=1) 
     df['dependencyPathId']=df.apply(lambda row: common.getDependencyPathId(row.dependencyPath), axis=1)
     
@@ -238,11 +242,12 @@ def processAlerts(repoId, df):
                     row.CVSS2_severity, row.CVSS2_score, row.CVSS3_severity, row.CVSS3_score ), axis=1)
     
     #note the path comparison here. some are hard coded. discuss themselves
+    npmDf = df[df['dependencyPath'].str.contains('/node_modules') | 
+               df['dependencyPath'].str.contains('/npm')]
     mavenDf=df[df['dependencyPath'].str.contains('.m2/repository/') | 
                df['dependencyPath'].str.contains('src/main/webapp/') |
                df['dependencyPath'].str.contains('pom.xml')]
-    npmDf = df[df['dependencyPath'].str.contains('/node_modules') | 
-               df['dependencyPath'].str.contains('/npm')]
+    
     
     print(repoId, len(mavenDf), len(npmDf), len(df))
     assert len(mavenDf) + len(npmDf) == len(df)
@@ -266,8 +271,6 @@ if __name__=='__main__':
     for path in repos:
         repo=path.split('/')[-1]
         repoId=common.getRepoId(repo)
-        if repoId != 28:
-            continue
         df, time =getOWASPReportAsDf(path, 'maven')
         if path in mavenRepos:
             mavenScantime += time
@@ -291,7 +294,7 @@ if __name__=='__main__':
         path=paths[repoId]
         df, time =getOWASPReportAsDf(path, 'cli')
         
-        npmScantime += time #hardcoding as know all to be maven
+        npmScantime += time #hardcoding as know all to be npm
         
         processAlerts(repoId, df)
         

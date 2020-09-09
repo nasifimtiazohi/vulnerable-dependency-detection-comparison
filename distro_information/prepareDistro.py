@@ -105,6 +105,25 @@ def addProjectsToDB(projects):
         addRepo(d['group'],project,d['version'],d['repo'])
         
 
+def sdkSetup():
+    projects = readPom('pom.xml')
+    
+    paths = common.getWatchedRepos()
+
+    for path in paths:
+        repo=path.split('/')[-1]
+        clonedRepos.append(repo)
+    
+
+    for k in projects.keys():
+        if projects[k]['repo'] in clonedRepos:
+            continue
+        if 'org.openmrs' not in projects[k]['group']:
+            print(projects[k]['group'])
+            continue
+
+        cloneAndCheckoutVersion(k, projects[k])
+
 def initial_setup():
     projects = readPom('pom.xml')
     

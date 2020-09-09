@@ -163,7 +163,11 @@ def runNPMAudit(repoId, path):
     os.system('npm install')
     
     filename= 'npmaudit.json'
+    
+    start= datetime.now()
     os.system('npm audit --json > {}'.format(filename))
+    end=datetime.now()
+    
     data= json.loads(open(filename).read())
     vulnMapping, severity = readAdvisories(data['advisories'])
     addVulnerabilities(repoId, data['actions'], vulnMapping, severity)
@@ -173,6 +177,8 @@ def runNPMAudit(repoId, path):
     os.system('npm audit fix --dry-run --json > {}'.format(filename))
     data= json.loads(open(filename).read())
     addAuditFixResults(repoId, data)
+    
+    return common.getTimeDeltaInMinutes(end-start)
 
 
 def truncateRelevantData():
@@ -185,10 +191,14 @@ def truncateRelevantData():
     
      
 if __name__=='__main__':
+    scanTime=0
+    
     truncateRelevantData()
     paths = getPackageJsonFilePaths()
     for repoId in paths.keys():
-        runNPMAudit(repoId, paths[repoId])
+        scanTime += runNPMAudit(repoId, paths[repoId])
+        
+    common.addScanTime(toolId, scanTime)
     
 
         
