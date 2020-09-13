@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append('../..')
-import common
+import common, sql
 import distro_information.prepareDistro as distro
 import subprocess, shlex
 import re
@@ -76,10 +76,10 @@ if __name__=='__main__':
         repo = path.split('/')[-1]
         release = repoRelaseMapping[repo]
         resetAndCheckHead(path, release)
-        githubReponame= repo+'-'+release
-        print(githubReponame)
+        # githubReponame= repo+'-'+release
+        # print(githubReponame)
         
-        copyFilesOfGitRepo(path, dest)
-        createGithubRepo(githubReponame)
-        repositorySetup(dest+repo+'/', githubReponame)
-        enable_dependency_alerts('nasifimtiazohi',githubReponame)
+        # copyFilesOfGitRepo(path, dest)
+        # createGithubRepo(githubReponame)
+        # repositorySetup(dest+repo+'/', githubReponame)
+        # enable_dependency_alerts('nasifimtiazohi',githubReponame)

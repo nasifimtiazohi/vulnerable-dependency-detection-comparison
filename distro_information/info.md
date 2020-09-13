@@ -53,3 +53,8 @@ Problem here:
 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/
 
 4. MVN watchlist does not contain owa modules.
+This has been already there
+
+
+To set, contrasst, add
+MAVEN_OPTS='-javaagent:/Users/nasifimtiaz/Desktop/contrast-files/contrast.jar'

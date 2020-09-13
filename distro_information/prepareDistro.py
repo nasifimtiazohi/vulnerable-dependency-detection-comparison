@@ -14,8 +14,9 @@ import csv
 import pandas as pd
 import common, sql
 import time
-serverId='distro-2-10-0'
+serverId='test'
 clonedRepos=[]
+password=os.environ['github_token']
 
 
 def readPom(file):
@@ -58,13 +59,13 @@ def cloneAndCheckoutVersion(artifact, data):
     group=data['group']
     repo=data['repo']
 
-    command='''mvn openmrs-sdk:clone 
-            -DserverId={} -DgroupId={} -DartifactId={}
-            -DgithubUsername=nasifimtiazohi 
-            -DgithubPassword={}'''.format(serverId, group ,artifact,password)
-    command=command.replace('\n',' ')
-    print(command)
-    os.system(command)
+    # command='''mvn openmrs-sdk:clone 
+    #         -DserverId={} -DgroupId={} -DartifactId={}
+    #         -DgithubUsername=nasifimtiazohi 
+    #         -DgithubPassword={}'''.format(serverId, group ,artifact,password)
+    # command=command.replace('\n',' ')
+    # print(command)
+    # os.system(command)
 
     os.chdir('./'+repo)
 
@@ -107,6 +108,15 @@ def addProjectsToDB(projects):
 
 def sdkSetup():
     projects = readPom('pom.xml')
+
+    for k in projects.keys():
+        if 'org.openmrs' not in projects[k]['group']:
+            continue
+
+        cloneAndCheckoutVersion(k, projects[k])
+
+def initial_setup():
+    projects = readPom('pom.xml')
     
     paths = common.getWatchedRepos()
 
@@ -123,26 +133,7 @@ def sdkSetup():
             continue
 
         cloneAndCheckoutVersion(k, projects[k])
-
-def initial_setup():
-    projects = readPom('pom.xml')
     
-    addProjectsToDB(projects)
-    
-    paths = common.getWatchedRepos()
-
-    for path in paths:
-        repo=path.split('/')[-1]
-        clonedRepos.append(repo)
-    
-
-    for k in projects.keys():
-        if projects[k]['repo'] in clonedRepos:
-            continue
-        if 'org.openmrs' not in projects[k]['group']:
-            continue
-
-        cloneAndCheckoutVersion(k, projects[k])
         
 def pushGitRepo(path):
     '''
@@ -189,9 +180,6 @@ def check_heads(paths):
     return True
     
 if __name__=='__main__':
-    password=os.environ['github_token']
-    hm = getRepoReleaseMapping()
-    paths= common.getAllRepos()
-    print(hm,paths)
+    sdkSetup()
     
     
