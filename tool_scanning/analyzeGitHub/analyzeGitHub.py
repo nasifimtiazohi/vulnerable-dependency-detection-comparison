@@ -100,13 +100,27 @@ def processAlerts(repoId, alerts):
         severity = mavenHM[(dependencyId,vulnId, toolId)]['severity']
         count = mavenHM[(dependencyId,vulnId, toolId)]['count']
         q= 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
-        sql.execute(q,(None,None,dependencyId,vulnId, toolId,None,severity,1))
+        try:
+            sql.execute(q,(None,None,dependencyId,vulnId, toolId,None,severity,1))
+        except sql.pymysql.IntegrityError as error:
+            if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                #TODO update scandate
+                print('maven alert exists already in db')     
+            else:  
+                raise Exception(str(error))
     
     for (dependencyId,vulnId, toolId) in npmHM:
         severity= npmHM[(dependencyId,vulnId, toolId)]['severity']
         count = npmHM[(dependencyId,vulnId, toolId)]['count']
         q= 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        sql.execute(q,(None,None,dependencyId,vulnId, None, toolId,None,severity,1))
+        try:
+            sql.execute(q,(None,None,dependencyId,vulnId, None, toolId,None,severity,1))
+        except sql.pymysql.IntegrityError as error:
+            if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                #TODO update scandate
+                print('maven alert exists already in db')     
+            else:  
+                raise Exception(str(error))
 
 
 if __name__=='__main__':

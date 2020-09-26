@@ -20,7 +20,7 @@ def resetAndCheckHead(path, release):
     os.chdir(path)
     
     subprocess.check_output(shlex.split('git reset --hard HEAD'))
-    subprocess.check_output(shlex.split('git clean -f -d'))
+    subprocess.check_output(shlex.split('git clean -dfx'))
     
     lines= subprocess.check_output(shlex.split('git branch'), encoding='437').split('\n')
     line = lines[0]
