@@ -49,15 +49,7 @@ def parseMavenIdentifier(dependency, identifier):
         return group, artifact, version
     
     elif identifier.startswith('pkg:javascript/'):
-        assert dependency.endswith('js')
-        artifact = dependency.split(':')[-1]
-        artifact = artifact[:-len('.js')]
-        
-        fullname = identifier[len('pkg:javascript/'):]
-        group='javascript'
-        assert fullname.count('@') == 1
-        version = fullname.split('@')[1]
-        return group, artifact, version
+        return parseJSidentifier(dependency, identifier)
         
     else:
         raise Exception('check this ', dependency, identifier)  
@@ -66,7 +58,29 @@ def getMavenPackageId(dependency: str, identifier: str, insertIfNotExists=False)
     group, artifact, version = parseMavenIdentifier(dependency, identifier)
     
     return common.getPackageId(group, artifact, version, 'maven', insertIfNotExists)
+
+def parseJSidentifier(dependency, identifier):
+    assert dependency.endswith('js')
+    artifact = dependency.split(':')[-1]
+    artifact = artifact[:-len('.js')]
+    artifact=artifact.strip()
     
+    fullname = identifier[len('pkg:javascript/'):]
+    group='javascript'
+    assert fullname.count('@') == 1
+    version = fullname.split('@')[1].strip()
+    
+    if '-' + version in artifact:
+        artifact = artifact[:-len('-' + version)]
+    if '-v' + version in artifact:
+        artifact = artifact[:-len('-v' + version)]
+    if '-' + version + '.cus' in artifact:
+        artifact = artifact[:-len('-' + version + '.cus')]
+    
+    
+    return group, artifact, version
+
+
 def parseNPMIdentifier(dependency, identifier):
     print(dependency, identifier)
     if ',' in identifier:
@@ -80,16 +94,8 @@ def parseNPMIdentifier(dependency, identifier):
         
         return group, artifact, version
     elif identifier.startswith('pkg:javascript/'):
-        assert dependency.endswith('js')
-        artifact = dependency.split(':')[-1]
-        artifact = artifact[:-len('.js')]
+        return parseJSidentifier(dependency, identifier)
         
-        fullname = identifier[len('pkg:javascript/'):]
-        group='javascript'
-        assert fullname.count('@') == 1
-        version = fullname.split('@')[1]
-        
-        return group, artifact, version
     else:
         raise Exception('check this ', dependency, identifier)
 
@@ -205,10 +211,26 @@ def processMavenAlerts(mavenDf):
     df['severity']=[np.nan]*len(df)
     df['count']=[1]*len(df)
     
-    print(df[df.duplicated()])
+    df=df[['scandate','dependencyId','vulnerabilityId','toolId','confidence']]
+    
     assert len(df[df.duplicated()])==0
-
-    sql.load_df('mavenAlert',df)
+    
+    alerts = df.values
+    insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
+    for alert in alerts:
+        for i in range(len(alert)):
+            if pd.isna(alert[i]):
+                alert[i]=None
+        scandate,dependencyId,vulnerabilityId, toolId, confidence = alert
+        try:
+            sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
+                                 toolId, confidence, None, 1))
+        except sql.pymysql.IntegrityError as error:
+            if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                #TODO update scandate
+                print('maven alert exists already in db')     
+            else:  
+                raise Exception(str(error))
 
 def processNPMAlerts(npmDf):
     df=npmDf
@@ -221,14 +243,29 @@ def processNPMAlerts(npmDf):
     
     df=df[['scandate','dependencyId','vulnerabilityId','dependencyPathId','toolId','confidence']]
     
-    df['id']=[np.nan]*len(df)
-    df['severity']=[np.nan]*len(df)
-    df['count']=[1]*len(df)
-    
-    print(df[df.duplicated()])
     assert len(df[df.duplicated()])==0
     
-    sql.load_df('npmAlert',df)
+   
+    alerts=df.values
+    
+    insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+    for alert in alerts:
+        for i in range(len(alert)):
+            if pd.isna(alert[i]):
+                alert[i]=None
+        scandate,dependencyId,vulnerabilityId, dependencyPathId, toolId, confidence = alert
+        try:
+            sql.execute(insertQ,(None,scandate,dependencyId,vulnerabilityId,
+                                 dependencyPathId, toolId, confidence, None, 1))
+        except sql.pymysql.IntegrityError as error:
+            if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                #TODO update scandate
+                print('npm alert exists already in db') 
+            else:
+                print((None,scandate,dependencyId,vulnerabilityId,
+                                 dependencyPathId,
+                                 toolId, None, None, 1))
+                raise Exception(str(error)) 
      
 def processAlerts(repoId, df):
     if len(df)==0:
@@ -243,7 +280,8 @@ def processAlerts(repoId, df):
     
     #note the path comparison here. some are hard coded. discuss themselves
     npmDf = df[df['dependencyPath'].str.contains('/node_modules') | 
-               df['dependencyPath'].str.contains('/npm')]
+               df['dependencyPath'].str.contains('/npm') |
+               df['dependencyPath'].str.contains('/package-lock.json')]
     mavenDf=df[df['dependencyPath'].str.contains('.m2/repository/') | 
                df['dependencyPath'].str.contains('src/main/webapp/') |
                df['dependencyPath'].str.contains('pom.xml')]
@@ -255,7 +293,19 @@ def processAlerts(repoId, df):
     processMavenAlerts(mavenDf)
     processNPMAlerts(npmDf)
     
+def npmInstall():
+    q  ='''select * from repoDependencyFiles rDF
+        join repository r on rDF.repositoryId = r.id
+        where file like %s'''
+    results= sql.execute(q,('%package.json',))
     
+    for item in results:
+        path = '/Users/nasifimtiaz/openmrs/' + item['repoName']
+        if '/' in item['file']:
+            path = path + '/' + item['file']
+            path=path[:-len('/package.json')]
+        os.chdir(path)
+        os.system('npm install')
     
 
 
@@ -265,7 +315,7 @@ if __name__=='__main__':
     mavenScantime = 0
     npmScantime = 0
     
-    #TODO: perform an npm install on npm paths
+    #npmInstall()
     
     repos=common.getWatchedRepos()
     for path in repos:
@@ -277,7 +327,7 @@ if __name__=='__main__':
         if path in npmRepos:
             npmScantime += time 
         processAlerts(repoId, df)
-        
+    
     repos = common.getNonMavenProjects()
     for path in repos:
         repo=path.split('/')[-1]

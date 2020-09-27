@@ -198,7 +198,7 @@ if __name__=='__main__':
     for repoId in paths.keys():
         scanTime += runNPMAudit(repoId, paths[repoId])
         
-    common.addScanTime(toolId, scanTime)
+    common.addScanTime(toolId, scanTime, 'npm')
     
 
         
