@@ -22,7 +22,11 @@ for dep in deps:
         and packageId=%s '''
     results= sql.execute(q, (repoId,packageId))
     
+    if not results:
+        continue 
+    
     if len(results) == 1:
+        item=results[0]
         depth = item['depth']
         scope = item['scope']
     else:
@@ -33,25 +37,29 @@ for dep in deps:
             scope=item['scope']
             if 'compile' in scope:
                 scopes.append('compile')
-            elif 'test' in scope:
-                scopes.append('test')
             elif 'provided' in scope:
                 scopes.append('provided')
             elif 'runtime' in scope:
                 scopes.append('runtime')
+            elif 'test' in scope:
+                scopes.append('test')
+            
             
             depths.append(item['depth'])
         
         depth = min(depths)        
         scope=None
-        if 'provided' in scopes:
-                scope='provided'
-        elif 'compile' in scopes:
-                scope='compile'
+        if 'compile' in scopes:
+            scope='compile'
         elif 'runtime' in scopes:
-                scope='runtime'
+            scope='runtime'
+        elif 'provided' in scopes:
+            scope='provided'
         elif 'test' in scopes:
-                scope='test'
+            scope='test'
+        else:
+            print(scopes)
+            raise Exception('check this')
     
     q='insert into derivedMavenDependencyTree values (%s,%s,%s)'
     sql.execute(q,(dependencyId,depth,scope))

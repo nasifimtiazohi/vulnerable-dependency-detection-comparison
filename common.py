@@ -14,6 +14,8 @@ def getPackageId(group, artifact, version, ecosystem=None, insertIfNotExists = F
     selectQ= 'select * from package where artifact=%s and version =%s'
     results=sql.execute(selectQ,(artifact, version))
     if not results:
+        print(group,artifact,version)
+        assert ' ' not in artifact and ' ' not in version and version not in artifact
         logging.info('new package found: %s, %s, %s',group, artifact, version)
         assert insertIfNotExists
         assert ecosystem
@@ -59,6 +61,15 @@ def addFromNvdApi(cve):
     response=requests.get(url)
     while response.status_code != 200 :
         if 'Unable to find' in response.text:
+            #REJECTED CVE
+            q='insert into rejectedCVEs values(%s)'
+            try:
+                sql.execute(q,(cve,))
+            except sql.pymysql.IntegrityError as error:
+                if error.args[0] == sql.PYMYSQL_DUPLICATE_ERROR:
+                    print(cve, ' already exists')
+                else:
+                    raise Exception(str(error))
             return -1
         print(response.content)
         time.sleep(3)

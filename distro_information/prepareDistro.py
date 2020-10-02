@@ -16,7 +16,7 @@ import common, sql
 import time
 serverId='test'
 clonedRepos=[]
-password=os.environ['github_token']
+password=None
 
 
 def readPom(file):
@@ -180,6 +180,7 @@ def check_heads(paths):
     return True
     
 if __name__=='__main__':
+    password=os.environ['github_token']
     sdkSetup()
     
     
