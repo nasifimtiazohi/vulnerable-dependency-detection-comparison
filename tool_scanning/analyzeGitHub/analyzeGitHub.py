@@ -123,6 +123,10 @@ def processAlerts(repoId, alerts):
                 raise Exception(str(error))
 
 
+
+
+
+
 if __name__=='__main__':
     repoRelaseMapping = distro.getRepoReleaseMapping()
     print(len(repoRelaseMapping))

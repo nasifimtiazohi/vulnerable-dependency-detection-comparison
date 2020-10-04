@@ -189,7 +189,71 @@ def get_whitesource_issues(name, repoId):
         if issue.user.login != 'whitesource-bolt-for-github[bot]':
             continue
         process_alert(issue.body, repoId)
-            
+    
+def acceptRenovatePR(name):
+    g=Github(token)
+    user = g.get_user()
+    repo = user.get_repo(name)
+    issues = repo.get_issues()
+    for issue in issues:
+        if issue.user.login != 'renovate[bot]':
+            continue
+        if issue.title == 'Configure Renovate':
+            pr = issue.as_pull_request()
+            if not pr.merged:
+                pr.merge()
+
+
+def readRenvatePr(name, repoId):
+    g=Github(token)
+    user = g.get_user()
+    repo = user.get_repo(name)
+    issues = repo.get_issues()
+    for issue in issues:
+        if issue.user.login != 'renovate[bot]':
+            continue
+        if 'Update dependency' not in issue.title:
+            continue
+        html = md.markdown(issue.body)
+        soup = bs(html, 'html.parser')
+        p = str(soup.find_all('p')[1])
+        p = p.split('|')
+        changeType = (p[-3])
+        
+        q='insert into renovate values(%s,%s)'
+        sql.execute(q,(repoId, changeType))
+
+def getChangeType(prior, fixed):
+    prior= prior.split('.')
+    fixed =fixed.split('.')
+    
+    if int(fixed[0]) > int(prior[0]):
+        return 'major'
+    elif int(fixed[1]) > int(prior[1]):
+        return 'minor'
+    else:
+        return 'patch'
+
+def readDependabotPR(name, repoId):
+    g=Github(token)
+    user = g.get_user()
+    repo = user.get_repo(name)
+    issues = repo.get_issues()
+    for issue in issues:
+        if issue.user.login != 'dependabot[bot]':
+            continue
+        if 'Bump' not in issue.title:
+            continue
+        body = issue.body.split('\n')[0]
+        print(body)
+        body=body.strip()
+        body=body.split(' ')
+        prior = body[-3]
+        fixed=body[-1]
+        changeType=getChangeType(prior,fixed)
+        
+        q='insert into dependabotPR values(%s,%s)'
+        sql.execute(q,(repoId, changeType))        
 if __name__=='__main__':
     repoRelaseMapping = distro.getRepoReleaseMapping()
     
@@ -197,5 +261,4 @@ if __name__=='__main__':
         repoId=common.getRepoId(repo)
         githubReponame = repo + '-' + repoRelaseMapping[repo]
         print(githubReponame)
-        #if 'openmrs-module-coreapps-1.28.0' == githubReponame:
-        get_whitesource_issues(githubReponame, repoId)
+        readDependabotPR(githubReponame, repoId)

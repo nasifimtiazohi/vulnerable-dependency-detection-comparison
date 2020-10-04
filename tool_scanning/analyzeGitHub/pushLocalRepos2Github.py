@@ -66,7 +66,16 @@ def deleteRepo(name):
     user = g.get_user()
     repo = user.get_repo(name)
     repo.delete()
-    
+
+def enableSecurityFixes(name):
+    g=Github(token)
+    user = g.get_user()
+    repo = user.get_repo(name)
+    repo.enable_automated_security_fixes()
+
+
+
+
 if __name__=='__main__':
     repoRelaseMapping = distro.getRepoReleaseMapping()
     paths= common.getAllRepos()
@@ -75,10 +84,11 @@ if __name__=='__main__':
     for path in paths:
         repo = path.split('/')[-1]
         release = repoRelaseMapping[repo]
-        resetAndCheckHead(path, release)
-        # githubReponame= repo+'-'+release
-        # print(githubReponame)
+        githubReponame= repo+'-'+release
+        print(githubReponame)
+        enableSecurityFixes(githubReponame)
         
+        #resetAndCheckHead(path, release)
         # copyFilesOfGitRepo(path, dest)
         # createGithubRepo(githubReponame)
         # repositorySetup(dest+repo+'/', githubReponame)
