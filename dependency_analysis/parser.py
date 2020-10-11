@@ -28,6 +28,7 @@ def buildTree(Tree):
     if not Tree:
         raise Exception('blank file')
     group, artifact, version,  packaging, scope = parseCanonicalForm(Tree[0])
+    rootArtifact = artifact #the root project
     root = DepTreeNode(group, artifact, version,  packaging, scope, depth=0)
     root.children = Tree[1:]
 
@@ -54,7 +55,7 @@ def buildTree(Tree):
                 group, artifact, version,  packaging, scope = parseCanonicalForm(
                     node.children[indexes[i]])
                 child = DepTreeNode(group, artifact, version,
-                                    packaging, scope, depth, node)
+                                packaging, scope, depth, node)
                 if i != len(indexes) - 1:
                     # if not last node
                     child.children = node.children[indexes[i]+1:indexes[i+1]]
@@ -82,7 +83,6 @@ def write2dict(root):
     project = ':'.join(data[0][0:3])
     d = {'project': project, 'dependencies': {}}
 
-    data = data[1:]
     if data:
         if len(data[0]) != 6:
             raise Exception("data row does not have six columns")

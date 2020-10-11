@@ -133,11 +133,14 @@ if __name__=='__main__':
     
     for repo in repoRelaseMapping.keys():
         repoId=common.getRepoId(repo)
+        if repoId !=1:
+            continue
         githubReponame = repo + '-' + repoRelaseMapping[repo]
         print(githubReponame)
         alerts=getDependencyAlerts('nasifimtiazohi', githubReponame)
-        print("{} has {} alerts".format(githubReponame,len(alerts)))
-        processAlerts(repoId, alerts)
+        print(alerts)
+        # print("{} has {} alerts".format(githubReponame,len(alerts)))
+        # processAlerts(repoId, alerts)
         
         #to help api rate limit  
         time.sleep(3)

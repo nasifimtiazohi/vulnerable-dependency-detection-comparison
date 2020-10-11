@@ -10,6 +10,12 @@ import numpy as np
 import subprocess, shlex 
 import npmDepTreeParser as ndt
 
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', -1)
+
+
 
 def addMavenDependencies(repoId, path):
     #generate maven dependency file 
@@ -27,6 +33,7 @@ def addMavenDependencies(repoId, path):
     
     #read dependency files to get tree data for each
     for file in files:
+        print(file)
         data=dependencyTree2Dict(file)
         module=data['project'].split(':')[1]
         data=data['dependencies']
@@ -37,7 +44,7 @@ def addMavenDependencies(repoId, path):
         data['module']= [module]*len(data['artifact'])
         df=pd.DataFrame(data)
         df['packageId']=df.apply(lambda row: 
-            getPackageId(row.group, row.artifact, row.version, 'maven'), axis=1)
+            getPackageId(row.group, row.artifact, row.version, 'maven', True), axis=1)
         df.drop(['group','artifact','version'], axis=1, inplace=True)
         sql.load_df('mavenDependencyTree',df)
         df=df[['repositoryId','packageId']]
@@ -67,18 +74,19 @@ def addNodeDependencies(repoId, path):
 
 
 def addDepndencies():
-    repos= common.getNpmPackageRepos()
-    sql.execute('truncate table npmDependencyTree')
-    for path in repos:
-        repo=path.split("/")[-1]
-        repoId = common.getRepoId(repo)
-        addNodeDependencies(repoId,path)
+    # repos= common.getNpmPackageRepos()
+    # sql.execute('truncate table npmDependencyTree')
+    # for path in repos:
+    #     repo=path.split("/")[-1]
+    #     repoId = common.getRepoId(repo)
+    #     addNodeDependencies(repoId,path)
     
     repos=common.getWatchedRepos()
     for path in repos:
         repo=path.split("/")[-1]
         repoId = common.getRepoId(repo)
-        addMavenDependencies(repoId, path)
+        if repoId == 19:
+            addMavenDependencies(repoId, path)
 
 if __name__=='__main__':
     addDepndencies()

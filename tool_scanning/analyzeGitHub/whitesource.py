@@ -169,11 +169,17 @@ def process_alert(s, repoId):
     for id, eco in libraryIds:
         dependencyId = common.getDependencyId(repoId,id,toolId,True)
         if eco == 'maven':
-            insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
-            sql.execute(insertQ,(None,None,dependencyId,vulnId,toolId,None,None,1))
+            try:
+                insertQ = 'insert into mavenAlert values(%s,%s,%s,%s,%s,%s,%s,%s)'
+                sql.execute(insertQ,(None,None,dependencyId,vulnId,toolId,None,None,1))
+            except:
+                continue
         elif eco == 'npm':
-            insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-            sql.execute(insertQ,(None,None,dependencyId,vulnId,None,toolId,None,None,1))
+            try:
+                insertQ = 'insert into npmAlert values(%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+                sql.execute(insertQ,(None,None,dependencyId,vulnId,None,toolId,None,None,1))
+            except:
+                continue
             
     
     
@@ -261,4 +267,5 @@ if __name__=='__main__':
         repoId=common.getRepoId(repo)
         githubReponame = repo + '-' + repoRelaseMapping[repo]
         print(githubReponame)
-        readDependabotPR(githubReponame, repoId)
+        get_whitesource_issues(githubReponame,repoId)
+        #readDependabotPR(githubReponame, repoId)
