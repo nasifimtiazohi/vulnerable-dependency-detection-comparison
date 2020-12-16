@@ -12,6 +12,11 @@ toolId = common.getToolId('NPM Audit')
 
 def getNPMVulnerability(data):
     sourceId = 'NPM-'+str(data['id'])
+    vulnId= common.getVulnerabilityId(None, sourceId)
+    if vulnId > 0:
+        return vulnId
+    
+    
     publishDate = dt.parse(data['created'])
     description = data['title']+data['overview']
     

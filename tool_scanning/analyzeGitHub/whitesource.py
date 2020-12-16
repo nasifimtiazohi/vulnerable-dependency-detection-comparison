@@ -267,5 +267,6 @@ if __name__=='__main__':
         repoId=common.getRepoId(repo)
         githubReponame = repo + '-' + repoRelaseMapping[repo]
         print(githubReponame)
-        get_whitesource_issues(githubReponame,repoId)
-        #readDependabotPR(githubReponame, repoId)
+        #get_whitesource_issues(githubReponame,repoId)
+        readDependabotPR(githubReponame, repoId)
+        readRenvatePr(githubReponame, repoId)

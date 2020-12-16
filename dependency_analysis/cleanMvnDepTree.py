@@ -61,8 +61,8 @@ for dep in deps:
             print(scopes)
             raise Exception('check this')
     
-    q='insert into derivedMavenDependencyTree values (%s,%s,%s)'
-    sql.execute(q,(dependencyId,depth,scope))
+    # q='insert into derivedMavenDependencyTree values (%s,%s,%s)'
+    # sql.execute(q,(dependencyId,depth,scope))
         
     
     
