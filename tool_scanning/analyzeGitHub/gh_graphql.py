@@ -17,7 +17,7 @@ def getDependencyAlerts(repo_owner, repo_name):
     query=''' 
             query($repo_owner: String!, $repo_name: String!, $after: String )  { 
                 repository(owner: $repo_owner , name: $repo_name ) {
-                    vulnerabilityAlerts(last:100, after: $after ) {
+                    vulnerabilityAlerts(first:100, after: $after ) {
                         totalCount
                         nodes {
                             id
